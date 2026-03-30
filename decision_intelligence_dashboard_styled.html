@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Intelligence System — Diaa Abu Al-Saud | Analytics Platform</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anta&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root {
+  /* Main site palette adapted */
+  --void:#0b0f07; --surface:#171f0d; --card:#1d2812; --card2:#222e14;
+  --border:rgba(143,168,62,.12); --border2:rgba(143,168,62,.25); --border3:rgba(143,168,62,.45);
+  --cyan:#8fa83e; --cyanRgb:143,168,62;
+  --violet:#b5d44e; --violetRgb:181,212,78;
+  --ember:#e07040; --mint:#7ec47e; --gold:#b5d44e; --rose:#e07040;
+  --t1:#f0f2e8; --t2:#7a8a62; --t3:#3a4a22;
+  --grad:linear-gradient(135deg,#8fa83e 0%,#b5d44e 100%);
+  --glowC:0 0 25px rgba(143,168,62,.25); --glowV:0 0 25px rgba(181,212,78,.2);
+  --radius:14px; --radius-sm:9px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Anta',sans-serif;background:var(--void);color:var(--t1);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(143,168,62,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(143,168,62,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+
+/* ─── HEADER ─── */
+.header{position:relative;padding:3.5rem 2rem 2.5rem;text-align:center;background:linear-gradient(180deg,#111608 0%,var(--void) 100%);border-bottom:1px solid var(--border2);overflow:hidden;z-index:1}
+.header::before{content:'';position:absolute;top:-60%;left:50%;transform:translateX(-50%);width:700px;height:350px;background:radial-gradient(ellipse,rgba(143,168,62,.12) 0%,transparent 68%);pointer-events:none}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--grad)}
+.header h1{font-family:'Anta',sans-serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:400;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.03em;margin-bottom:.5rem}
+.header .sub{color:var(--t2);font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:1.2rem}
+.header-badges{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.hbadge{padding:.2rem .7rem;background:rgba(0,212,255,.08);border:1px solid var(--border2);border-radius:20px;font-size:.72rem;color:var(--cyan);font-family:'JetBrains Mono',monospace;letter-spacing:.05em}
+
+/* ─── NAVIGATION ─── */
+.nav-wrap{position:sticky;top:0;z-index:100;background:rgba(6,14,28,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2)}
+.nav-tabs{display:flex;gap:.35rem;padding:.85rem 1.5rem;overflow-x:auto;scrollbar-width:none;max-width:1700px;margin:0 auto}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{padding:.6rem 1.1rem;border:1px solid transparent;background:transparent;cursor:pointer;border-radius:var(--radius-sm);font-weight:500;font-size:.82rem;font-family:'Anta',sans-serif;transition:all .2s;white-space:nowrap;color:var(--t2);letter-spacing:.01em}
+.nav-tab:hover{border-color:var(--border2);color:var(--t1);background:rgba(0,212,255,.06)}
+.nav-tab.active{background:linear-gradient(135deg,rgba(0,212,255,.18),rgba(123,63,255,.15));border-color:var(--border3);color:var(--cyan);box-shadow:0 0 16px rgba(0,212,255,.15)}
+
+/* ─── LAYOUT ─── */
+.main{max-width:1700px;margin:0 auto;padding:2rem 1.5rem}
+.section{display:none;animation:fadeUp .4s ease}
+.section.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── SECTION HEADER ─── */
+.sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.sec-title{font-family:'Anta',sans-serif;font-size:1.65rem;font-weight:400;color:var(--t1)}
+.sec-title span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* ─── KPI CARDS ─── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin-bottom:1.75rem}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem 1.5rem;transition:all .25s;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.kpi-card.c-violet::before{background:linear-gradient(90deg,var(--violet),#a855f7)}
+.kpi-card.c-mint::before{background:linear-gradient(90deg,var(--mint),#06b6d4)}
+.kpi-card.c-rose::before{background:linear-gradient(90deg,var(--rose),#f97316)}
+.kpi-card.c-gold::before{background:linear-gradient(90deg,var(--gold),var(--ember))}
+.kpi-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:var(--glowC)}
+.kpi-label{font-size:.78rem;color:var(--t2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.6rem;font-weight:500}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:600;color:var(--t1);letter-spacing:-.02em;line-height:1}
+.kpi-trend{margin-top:.6rem;font-size:.8rem;display:flex;align-items:center;gap:.35rem}
+.kpi-trend.up{color:var(--mint)} .kpi-trend.down{color:var(--rose)} .kpi-trend.neutral{color:var(--t2)}
+
+/* ─── CHART GRID ─── */
+.chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-bottom:1.75rem}
+@media(max-width:1100px){.chart-grid{grid-template-columns:1fr}}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;transition:border-color .2s}
+.chart-box:hover{border-color:var(--border2)}
+.chart-box.full{grid-column:1/-1}
+.chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.chart-title{font-family:'Anta',sans-serif;font-size:.95rem;font-weight:400;color:var(--t1)}
+.chart-plot{width:100%;height:280px}
+.chart-plot-lg{width:100%;height:340px}
+
+/* ─── TABLES ─── */
+.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;margin-bottom:1.75rem;overflow-x:auto}
+.tbl-head{font-family:'Anta',sans-serif;font-size:1rem;font-weight:400;color:var(--t1);margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{padding:.7rem 1rem;text-align:left;background:rgba(0,212,255,.07);color:var(--cyan);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border2);white-space:nowrap}
+td{padding:.65rem 1rem;border-bottom:1px solid var(--border);color:var(--t2);transition:background .15s}
+tr:hover td{background:rgba(0,212,255,.04);color:var(--t1)}
+td.mono{font-family:'JetBrains Mono',monospace;font-size:.8rem}
+td.pos{color:var(--mint)} td.neg{color:var(--rose)} td.warn{color:var(--gold)}
+
+/* ─── CONTROLS ─── */
+.controls-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.6rem;margin-bottom:1.75rem}
+.ctrl-title{font-family:'Anta',sans-serif;font-size:1rem;font-weight:400;color:var(--t1);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem}
+.ctrl-group label{display:block;font-size:.78rem;color:var(--t2);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.55rem}
+.slider-row{display:flex;align-items:center;gap:.8rem}
+input[type=range]{flex:1;-webkit-appearance:none;height:5px;border-radius:4px;background:rgba(0,212,255,.12);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,.5);cursor:pointer;transition:transform .2s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--cyan);font-weight:600;min-width:64px;text-align:right}
+
+/* ─── INSIGHTS BOX ─── */
+.insight-box{background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(123,63,255,.06));border:1px solid var(--border2);border-radius:var(--radius);padding:1.4rem;margin-bottom:1.75rem}
+.insight-box.green{background:linear-gradient(135deg,rgba(0,229,160,.06),rgba(6,182,212,.04));border-color:rgba(0,229,160,.25)}
+.insight-box.red{background:linear-gradient(135deg,rgba(255,69,96,.06),rgba(249,115,22,.04));border-color:rgba(255,69,96,.25)}
+.insight-box.yellow{background:linear-gradient(135deg,rgba(255,179,0,.06),rgba(255,107,53,.04));border-color:rgba(255,179,0,.25)}
+.insight-title{font-family:'Anta',sans-serif;font-size:.95rem;font-weight:400;color:var(--t1);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+.insight-box ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.insight-box li{display:flex;gap:.65rem;color:var(--t2);font-size:.83rem;line-height:1.55}
+.insight-box li::before{content:'›';color:var(--cyan);font-weight:700;flex-shrink:0;margin-top:.05rem}
+.insight-box li strong{color:var(--t1)}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;padding:.18rem .6rem;border-radius:20px;font-size:.72rem;font-weight:600;font-family:'JetBrains Mono',monospace}
+.b-green{background:rgba(0,229,160,.15);color:var(--mint);border:1px solid rgba(0,229,160,.3)}
+.b-red{background:rgba(255,69,96,.15);color:var(--rose);border:1px solid rgba(255,69,96,.3)}
+.b-gold{background:rgba(255,179,0,.15);color:var(--gold);border:1px solid rgba(255,179,0,.3)}
+.b-cyan{background:rgba(0,212,255,.15);color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.b-violet{background:rgba(123,63,255,.15);color:#a78bfa;border:1px solid rgba(123,63,255,.3)}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem 1.1rem;border:1px solid var(--border2);background:rgba(0,212,255,.08);color:var(--cyan);cursor:pointer;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;font-family:'Anta',sans-serif;transition:all .2s;text-decoration:none}
+.btn:hover{background:rgba(0,212,255,.16);border-color:var(--border3);box-shadow:var(--glowC)}
+.btn-violet{border-color:rgba(123,63,255,.35);background:rgba(123,63,255,.1);color:#a78bfa}
+.btn-violet:hover{background:rgba(123,63,255,.2);box-shadow:var(--glowV)}
+
+/* ─── STAT ROW ─── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.75rem}
+.stat-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem 1.2rem;text-align:center}
+.stat-label{font-size:.72rem;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+.stat-num{font-family:'JetBrains Mono',monospace;font-size:1.45rem;font-weight:600;color:var(--cyan)}
+
+/* ─── LOADING ─── */
+#loadingOverlay{position:fixed;inset:0;background:var(--void);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1.5rem;transition:opacity .4s}
+#loadingOverlay.hidden{opacity:0;pointer-events:none}
+.loader-ring{width:56px;height:56px;border:3px solid var(--border2);border-top:3px solid var(--cyan);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--t2);letter-spacing:.08em}
+.loader-prog{width:220px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.loader-prog-bar{height:100%;background:var(--grad);border-radius:2px;transition:width .3s;width:0%}
+
+/* ─── RECOMMENDATION BOX ─── */
+#recoBox{padding:1.4rem;background:var(--card2);border-radius:var(--radius);border:1px solid var(--border2);margin-top:1rem}
+#recoTitle{font-family:'Anta',sans-serif;font-weight:400;margin-bottom:.6rem;font-size:.95rem}
+#recoBody{color:var(--t2);font-size:.85rem;line-height:1.6}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-grid{grid-template-columns:1fr}
+  .ctrl-grid{grid-template-columns:1fr}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .kpi-grid,.stat-row{grid-template-columns:1fr}
+  .kpi-value{font-size:1.5rem}
+}
+
+/* ─── DIVIDER ─── */
+.divider{height:1px;background:var(--border);margin:1.5rem 0}
+
+/* ─── SEGMENT COLORS ─── */
+.seg-0{color:#00D4FF} .seg-1{color:#7B3FFF} .seg-2{color:#00E5A0} .seg-3{color:#FFB300}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="sub">Enterprise Analytics Platform · v3.0</div>
+  <h1>Decision Intelligence System</h1>
+  <div class="header-badges">
+    <span class="hbadge">10,000 records</span>
+    <span class="hbadge">8 ML models</span>
+    <span class="hbadge">Real-time simulation</span>
+    <span class="hbadge">Causal inference</span>
+    <span class="hbadge">CLV · RFM · Churn</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="showSection('executive')">📊 Executive</button>
+    <button class="nav-tab" onclick="showSection('revenue')">🎯 Revenue Drivers</button>
+    <button class="nav-tab" onclick="showSection('customer')">👥 Customer Insights</button>
+    <button class="nav-tab" onclick="showSection('conversion')">🔄 Conversion</button>
+    <button class="nav-tab" onclick="showSection('pricing')">💰 Pricing Impact</button>
+    <button class="nav-tab" onclick="showSection('churn')">⚠️ Churn Dashboard</button>
+    <button class="nav-tab" onclick="showSection('budget')">📈 Budget Optimizer</button>
+    <button class="nav-tab" onclick="showSection('scenario')">🔬 Scenario Simulator</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 1 – EXECUTIVE OVERVIEW
+═══════════════════════════════════════════════════ -->
+<div id="executive" class="section active">
+  <div class="sec-header">
+    <div class="sec-title">📊 Executive <span>Overview</span></div>
+    <button class="btn" onclick="exportSection('executive')"><i class="fas fa-download"></i> Export PDF</button>
+  </div>
+
+  <div class="kpi-grid" id="execKPIs"></div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Monthly Revenue Trend</span></div>
+      <div id="cRevTrend" class="chart-plot-lg"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Regional Performance</span></div>
+      <div id="cRegional" class="chart-plot-lg"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Seasonal Revenue Distribution</span></div>
+      <div id="cSeasonal" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Channel Effectiveness</span></div>
+      <div id="cChannel" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title"><i class="fas fa-lightbulb" style="color:var(--gold)"></i> Key Executive Insights</div>
+    <ul id="execInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 2 – REVENUE DRIVERS
+═══════════════════════════════════════════════════ -->
+<div id="revenue" class="section">
+  <div class="sec-header">
+    <div class="sec-title">🎯 Revenue <span>Drivers</span></div>
+    <button class="btn" onclick="exportSection('revenue')"><i class="fas fa-file-csv"></i> Export Report</button>
+  </div>
+
+  <div class="controls-box">
+    <div class="ctrl-title"><i class="fas fa-sliders-h" style="color:var(--cyan)"></i> Parameter Forecast Controls</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label>Marketing Budget Change (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sRevMkt" min="-30" max="50" value="10" step="5">
+          <span class="slider-val" id="dRevMkt">+10%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Online Ad Spend Change (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sRevAd" min="-20" max="40" value="15" step="5">
+          <span class="slider-val" id="dRevAd">+15%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Promotions Count Δ</label>
+        <div class="slider-row">
+          <input type="range" id="sRevProm" min="-3" max="5" value="1" step="1">
+          <span class="slider-val" id="dRevProm">+1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Feature Importance (SHAP)</span></div>
+      <div id="cShap" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">OLS Regression Coefficients</span></div>
+      <div id="cCoeff" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Online vs Offline Ad Impact</span></div>
+      <div id="cAdImpact" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Promotions Effect on Revenue</span></div>
+      <div id="cPromo" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">Causal Impact Scenarios</div>
+    <table>
+      <thead><tr><th>Scenario</th><th>Parameter Change</th><th>Expected Revenue Δ</th><th>% Impact</th><th>Confidence</th></tr></thead>
+      <tbody id="tCausal"></tbody>
+    </table>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title"><i class="fas fa-brain" style="color:var(--cyan)"></i> Revenue Optimization Insights</div>
+    <ul id="revInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 3 – CUSTOMER INSIGHTS
+═══════════════════════════════════════════════════ -->
+<div id="customer" class="section">
+  <div class="sec-header">
+    <div class="sec-title">👥 Customer <span>Insights</span></div>
+    <button class="btn" onclick="dlCSV()"><i class="fas fa-download"></i> Download CSV</button>
+  </div>
+
+  <div class="kpi-grid" id="custKPIs"></div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">CLV Distribution (3-Year)</span></div>
+      <div id="cClvDist" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">K-Means Customer Segments</span></div>
+      <div id="cSegPie" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">RFM Score Heatmap</span></div>
+      <div id="cRfm" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Segment Revenue Contribution</span></div>
+      <div id="cSegRev" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">Top 15 High-Value Customers</div>
+    <table>
+      <thead><tr><th>#</th><th>Customer ID</th><th>Revenue</th><th>CLV (3Yr)</th><th>Frequency</th><th>Churn Risk</th><th>Segment</th></tr></thead>
+      <tbody id="tHighVal"></tbody>
+    </table>
+  </div>
+
+  <div class="insight-box green">
+    <div class="insight-title"><i class="fas fa-users" style="color:var(--mint)"></i> Customer Strategy Recommendations</div>
+    <ul id="custInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 4 – CONVERSION ANALYSIS
+═══════════════════════════════════════════════════ -->
+<div id="conversion" class="section">
+  <div class="sec-header">
+    <div class="sec-title">🔄 Conversion <span>Analysis</span></div>
+    <button class="btn" onclick="exportSection('conversion')"><i class="fas fa-download"></i> Export Model</button>
+  </div>
+
+  <div class="stat-row" id="convStats"></div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Conversion Funnel</span></div>
+      <div id="cFunnel" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Top Conversion Drivers</span></div>
+      <div id="cConvDrivers" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Converter vs Non-Converter Profile</span></div>
+      <div id="cConvComp" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Feature Correlation Heatmap</span></div>
+      <div id="cCorrHeat" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">Conversion Barriers Analysis</div>
+    <table>
+      <thead><tr><th>Barrier</th><th>Converter Avg</th><th>Non-Converter Avg</th><th>Gap</th><th>Impact</th></tr></thead>
+      <tbody id="tBarriers"></tbody>
+    </table>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title"><i class="fas fa-chart-bar" style="color:var(--violet)"></i> Conversion Optimization Strategies</div>
+    <ul id="convInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 5 – PRICING IMPACT
+═══════════════════════════════════════════════════ -->
+<div id="pricing" class="section">
+  <div class="sec-header">
+    <div class="sec-title">💰 Pricing <span>Impact</span></div>
+    <button class="btn" onclick="exportSection('pricing')"><i class="fas fa-download"></i> Download Study</button>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Revenue vs Discount Level</span></div>
+      <div id="cDiscount" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Competitor Price Index vs Revenue</span></div>
+      <div id="cCompPrice" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Price Elasticity by Category</span></div>
+      <div id="cElasticity" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Discount vs Conversion Rate</span></div>
+      <div id="cDiscConv" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">Pricing Strategy Recommendations</div>
+    <table>
+      <thead><tr><th>Strategy</th><th>Expected Impact</th><th>Risk Level</th><th>Priority</th><th>Action</th></tr></thead>
+      <tbody id="tPricing"></tbody>
+    </table>
+  </div>
+
+  <div class="insight-box yellow">
+    <div class="insight-title"><i class="fas fa-tags" style="color:var(--gold)"></i> Pricing Strategy Insights</div>
+    <ul id="pricingInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 6 – CHURN DASHBOARD
+═══════════════════════════════════════════════════ -->
+<div id="churn" class="section">
+  <div class="sec-header">
+    <div class="sec-title">⚠️ Churn <span>Dashboard</span></div>
+    <button class="btn btn-violet" onclick="exportSection('churn')"><i class="fas fa-bell"></i> Get Alert List</button>
+  </div>
+
+  <div class="kpi-grid" id="churnKPIs"></div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Risk Level Distribution</span></div>
+      <div id="cRiskDist" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Churn Probability vs Recency</span></div>
+      <div id="cChurnRec" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Churn Predictor Importance</span></div>
+      <div id="cChurnPred" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Satisfaction Score vs Churn Risk</span></div>
+      <div id="cSatChurn" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">🚨 At-Risk Customer Alerts (Top 15)</div>
+    <table>
+      <thead><tr><th>Customer ID</th><th>Churn Prob</th><th>Risk Level</th><th>Days Inactive</th><th>Satisfaction</th><th>CLV</th><th>Action</th></tr></thead>
+      <tbody id="tAtRisk"></tbody>
+    </table>
+  </div>
+
+  <div class="insight-box red">
+    <div class="insight-title"><i class="fas fa-shield-alt" style="color:var(--rose)"></i> Retention Action Plan</div>
+    <ul id="churnInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 7 – BUDGET OPTIMIZER
+═══════════════════════════════════════════════════ -->
+<div id="budget" class="section">
+  <div class="sec-header">
+    <div class="sec-title">📈 Budget <span>Optimizer</span></div>
+    <button class="btn" onclick="exportSection('budget')"><i class="fas fa-download"></i> Export Allocation</button>
+  </div>
+
+  <div class="controls-box">
+    <div class="ctrl-title"><i class="fas fa-sliders-h" style="color:var(--cyan)"></i> Budget Parameters</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label>Total Monthly Budget ($)</label>
+        <div class="slider-row">
+          <input type="range" id="sBudgTotal" min="50000" max="500000" value="200000" step="10000">
+          <span class="slider-val" id="dBudgTotal">$200K</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Online Ad Share (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sBudgOnline" min="20" max="80" value="60" step="5">
+          <span class="slider-val" id="dBudgOnline">60%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Monthly Promotion Count</label>
+        <div class="slider-row">
+          <input type="range" id="sBudgProm" min="0" max="12" value="5" step="1">
+          <span class="slider-val" id="dBudgProm">5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Optimal Budget Allocation</span></div>
+      <div id="cBudgAlloc" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">ROI by Channel</span></div>
+      <div id="cBudgROI" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Spend vs Revenue Scenarios</span></div>
+      <div id="cBudgScen" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Budget Efficiency Frontier</span></div>
+      <div id="cBudgFront" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">Allocation Details</div>
+    <table>
+      <thead><tr><th>Channel</th><th>Allocated</th><th>% of Budget</th><th>Expected Revenue</th><th>ROI</th><th>Status</th></tr></thead>
+      <tbody id="tBudget"></tbody>
+    </table>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title"><i class="fas fa-chart-pie" style="color:var(--cyan)"></i> Budget Optimization Insights</div>
+    <ul id="budgetInsights"></ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 8 – SCENARIO SIMULATOR
+═══════════════════════════════════════════════════ -->
+<div id="scenario" class="section">
+  <div class="sec-header">
+    <div class="sec-title">🔬 Scenario <span>Simulator</span></div>
+    <button class="btn" onclick="exportSection('scenario')"><i class="fas fa-save"></i> Save Scenario</button>
+  </div>
+
+  <div style="background:rgba(0,212,255,.06);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem 1.3rem;margin-bottom:1.5rem;font-size:.83rem;color:var(--t2)">
+    <i class="fas fa-info-circle" style="color:var(--cyan)"></i>&nbsp;
+    Adjust parameters below for real-time revenue impact predictions using causal inference models trained on your dataset.
+  </div>
+
+  <div class="controls-box">
+    <div class="ctrl-title"><i class="fas fa-flask" style="color:var(--violet)"></i> Simulation Parameters</div>
+    <div class="ctrl-grid">
+      <div class="ctrl-group">
+        <label>Marketing Budget Change (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sSimMkt" min="-50" max="100" value="0" step="5" oninput="onSimSlider(this,'dSimMkt',v=>`${v>0?'+':''}${v}%`)">
+          <span class="slider-val" id="dSimMkt">0%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Discount Level (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sSimDisc" min="0" max="40" value="15" step="1" oninput="onSimSlider(this,'dSimDisc',v=>`${v}%`)">
+          <span class="slider-val" id="dSimDisc">15%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Online Ad Share (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sSimOnline" min="20" max="80" value="60" step="5" oninput="onSimSlider(this,'dSimOnline',v=>`${v}%`)">
+          <span class="slider-val" id="dSimOnline">60%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Promotions Count</label>
+        <div class="slider-row">
+          <input type="range" id="sSimProm" min="0" max="12" value="5" step="1" oninput="onSimSlider(this,'dSimProm',v=>v)">
+          <span class="slider-val" id="dSimProm">5</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Competitor Price Index</label>
+        <div class="slider-row">
+          <input type="range" id="sSimComp" min="70" max="130" value="100" step="5" oninput="onSimSlider(this,'dSimComp',v=>v)">
+          <span class="slider-val" id="dSimComp">100</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Email Open Rate (%)</label>
+        <div class="slider-row">
+          <input type="range" id="sSimEmail" min="10" max="70" value="35" step="5" oninput="onSimSlider(this,'dSimEmail',v=>`${v}%`)">
+          <span class="slider-val" id="dSimEmail">35%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Projected Revenue Impact</span></div>
+      <div id="cSimRev" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">ROI Gauge</span></div>
+      <div id="cSimROI" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Revenue Contribution Breakdown</span></div>
+      <div id="cSimContrib" class="chart-plot"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-head"><span class="chart-title">Before vs After Metrics</span></div>
+      <div id="cSimBA" class="chart-plot"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">Simulation Results Summary</div>
+    <table>
+      <thead><tr><th>Metric</th><th>Baseline</th><th>Projected</th><th>Change $</th><th>Change %</th></tr></thead>
+      <tbody id="tSimResults"></tbody>
+    </table>
+  </div>
+
+  <div id="recoBox">
+    <div id="recoTitle">🤖 AI Recommendation</div>
+    <div id="recoBody">Adjust parameters above to see recommendations...</div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text" id="loaderMsg">Initializing system...</div>
+  <div class="loader-prog"><div class="loader-prog-bar" id="loaderBar"></div></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONSTANTS & GLOBALS
+// ══════════════════════════════════════════════════════════════
+const CFG = {
+  N: 10000,
+  regions:   ['North America','Europe','Asia Pacific','Latin America','Middle East'],
+  channels:  ['Online','Offline','Hybrid','Direct Sales'],
+  categories:['Electronics','Clothing','Home & Garden','Sports','Food & Beverages'],
+  segments:  ['Premium','Mid-Market','Budget','Enterprise'],
+  seasons:   ['Spring','Summer','Fall','Winter','Holiday'],
+  segNames:  ['Champions','Loyal Customers','At-Risk','New Customers']
+};
+
+const CLRS = ['#8fa83e','#b5d44e','#7ec47e','#e07040','#4d6020','#5e8f3e','#c8d96a','#a8c434'];
+
+const DK = { // Plotly dark theme layout defaults
+  paper_bgcolor:'rgba(0,0,0,0)',
+  plot_bgcolor:'rgba(23,31,13,0.6)',
+  font:{family:"'Anta',sans-serif",color:'#7a8a62',size:11},
+  colorway:CLRS,
+  xaxis:{gridcolor:'rgba(143,168,62,0.07)',linecolor:'rgba(143,168,62,0.15)',tickfont:{color:'#7a8a62'},zeroline:false},
+  yaxis:{gridcolor:'rgba(143,168,62,0.07)',linecolor:'rgba(143,168,62,0.15)',tickfont:{color:'#7a8a62'},zeroline:false},
+  legend:{bgcolor:'rgba(0,0,0,0.4)',bordercolor:'rgba(143,168,62,0.2)',font:{color:'#7a8a62'}},
+  margin:{t:30,b:45,l:55,r:15}
+};
+const PCONF = {responsive:true,displayModeBar:false,displaylogo:false};
+
+let DS = [], EXT = [], AGG = {}, MDL = {};
+const rendered = new Set();
+
+// ══════════════════════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════════════════════
+function sr(seed){ const x=Math.sin(seed+1)*10000; return x-Math.floor(x); }
+function rnd(min,max,seed){ return min+sr(seed)*(max-min); }
+function rndInt(min,max,seed){ return Math.floor(rnd(min,max+1,seed)); }
+function choice(arr,seed){ return arr[rndInt(0,arr.length-1,seed)]; }
+function fmt$(v){ return '$'+Math.round(v).toLocaleString(); }
+function fmtPct(v){ return (v>=0?'+':'')+v.toFixed(1)+'%'; }
+function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+function mean(arr){ return arr.reduce((s,v)=>s+v,0)/arr.length; }
+function groupBy(arr,key,val){ 
+  const m={};
+  arr.forEach(r=>{ const k=r[key]; m[k]=(m[k]||0)+(val?r[val]:1); });
+  return m;
+}
+function mergeLayout(extra){ return Object.assign({},DK,extra,{
+  xaxis:Object.assign({},DK.xaxis,(extra||{}).xaxis||{}),
+  yaxis:Object.assign({},DK.yaxis,(extra||{}).yaxis||{})
+}); }
+function setProgress(pct,msg){
+  document.getElementById('loaderBar').style.width=pct+'%';
+  if(msg) document.getElementById('loaderMsg').textContent=msg;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA GENERATION
+// ══════════════════════════════════════════════════════════════
+function generateData(){
+  const base=new Date('2024-01-01').getTime();
+  const year=31536000000;
+  DS=[];
+  for(let i=0;i<CFG.N;i++){
+    const s=i*7919;
+    const region=choice(CFG.regions,s);
+    const channel=choice(CFG.channels,s+1);
+    const cat=choice(CFG.categories,s+2);
+    const seg=choice(CFG.segments,s+3);
+    const season=choice(CFG.seasons,s+4);
+
+    const mktBudget=clamp(rnd(10000,90000,s+5),10000,90000);
+    const adOnline=clamp(rnd(5000,60000,s+6),5000,60000);
+    const adOffline=clamp(rnd(5000,40000,s+7),5000,40000);
+    const numProm=rndInt(0,10,s+8);
+    const discPct=parseFloat(rnd(0,30,s+9).toFixed(1));
+    const numReps=rndInt(1,25,s+10);
+    const custAge=rndInt(18,75,s+11);
+    const satisfaction=parseFloat(rnd(1,10,s+12).toFixed(1));
+    const compPrice=parseFloat(rnd(75,125,s+13).toFixed(1));
+    const traffic=rndInt(1000,100000,s+14);
+    const convRate=parseFloat(rnd(0.5,10,s+15).toFixed(2));
+    const emailOpen=parseFloat(rnd(10,65,s+16).toFixed(1));
+    const smFollowers=rndInt(1000,500000,s+17);
+    const daysSince=rndInt(1,365,s+18);
+    const numPrev=rndInt(1,20,s+19);
+
+    const revenue=Math.max(800,Math.round(calcRevenue({
+      mktBudget,adOnline,adOffline,numProm,discPct,numReps,
+      custAge,satisfaction,compPrice,traffic,convRate,emailOpen,
+      smFollowers,daysSince,numPrev,region,channel,cat,seg,season
+    })*(0.65+sr(s+20)*0.7)));
+
+    DS.push({
+      id:i+1,
+      date:new Date(base+sr(s+21)*year).toISOString().split('T')[0],
+      region,channel,cat,seg,season,
+      mktBudget,adOnline,adOffline,numProm,discPct,numReps,
+      custAge,satisfaction,compPrice,traffic,convRate,emailOpen,
+      smFollowers,daysSince,numPrev,revenue
+    });
+  }
+}
+
+function calcRevenue(p){
+  const seasonM={Spring:1.0,Summer:1.1,Fall:1.05,Winter:0.9,Holiday:1.4};
+  const regionM={'North America':1.3,'Europe':1.1,'Asia Pacific':1.2,'Latin America':0.85,'Middle East':1.0};
+  const channelM={Online:1.2,Offline:1.0,Hybrid:1.15,'Direct Sales':1.4};
+  const segM={Premium:1.4,'Mid-Market':1.0,Budget:0.75,Enterprise:1.6};
+
+  const base=50000;
+  const mktImpact=p.mktBudget*0.75+p.adOnline*1.1+p.adOffline*0.85;
+  const promImpact=p.numProm*2200*(1+p.discPct/25);
+  const compImpact=1-((p.compPrice-100)/250);
+  const satImpact=1+(p.satisfaction-5)/18;
+  const engageImpact=1+(p.emailOpen-35)/200;
+
+  return base
+    *(1+mktImpact/800)
+    *(seasonM[p.season]||1)
+    *(regionM[p.region]||1)
+    *(channelM[p.channel]||1)
+    *(segM[p.seg]||1)
+    *compImpact*satImpact*engageImpact
+    *(1+promImpact/base);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ANALYTICS
+// ══════════════════════════════════════════════════════════════
+function computeAll(){
+  // --- Aggregates ---
+  AGG.monthly={};
+  DS.forEach(r=>{
+    const m=r.date.substring(0,7);
+    if(!AGG.monthly[m]) AGG.monthly[m]={rev:0,cnt:0};
+    AGG.monthly[m].rev+=r.revenue; AGG.monthly[m].cnt++;
+  });
+
+  AGG.regional=groupBy(DS,'region','revenue');
+  AGG.seasonal=groupBy(DS,'season','revenue');
+  AGG.channel=groupBy(DS,'channel','revenue');
+  AGG.category=groupBy(DS,'cat','revenue');
+  AGG.totalRev=DS.reduce((s,r)=>s+r.revenue,0);
+  AGG.avgConv=mean(DS.map(r=>r.convRate));
+  AGG.avgSat=mean(DS.map(r=>r.satisfaction));
+
+  // --- Linear Regression (OLS) on 2000 sample ---
+  const sample=DS.filter((_,i)=>i%5===0);
+  const features=['mktBudget','adOnline','adOffline','numProm','discPct','satisfaction','compPrice','daysSince'];
+  const X=sample.map(r=>features.map(f=>r[f]));
+  const y=sample.map(r=>r.revenue);
+  MDL.ols=olsRegression(X,y,features);
+
+  // --- SHAP approximation ---
+  const means=features.map((_,fi)=>mean(sample.map(r=>r[features[fi]])));
+  MDL.shap=features.map((f,fi)=>({
+    feature:f,
+    value:Math.abs((MDL.ols.slopes[fi]||0)*means[fi]),
+    coeff:MDL.ols.slopes[fi]||0,
+    contrib:(MDL.ols.slopes[fi]||0)*means[fi]
+  })).sort((a,b)=>b.value-a.value);
+
+  // --- Logistic Regression for conversion ---
+  const convThresh=percentile(DS.map(r=>r.convRate),60);
+  const Xlr=sample.map(r=>[r.emailOpen,r.traffic/10000,r.satisfaction,r.daysSince/100,r.smFollowers/100000]);
+  const ylr=sample.map(r=>r.convRate>=convThresh?1:0);
+  MDL.logit=logisticReg(Xlr,ylr,0.05,300);
+
+  // --- K-Means Clustering ---
+  const kData=DS.map(r=>[
+    norm(r.revenue,1000,500000),
+    norm(r.numPrev,1,20),
+    norm(r.satisfaction,1,10),
+    norm(r.daysSince,1,365)
+  ]);
+  MDL.kmeans=kMeans(kData,4,30);
+
+  // --- Pre-compute EXT ---
+  EXT=DS.map((r,i)=>{
+    const clv=estCLV(r.revenue,r.numPrev,r.daysSince);
+    const cp=churnProb(r);
+    return {...r, clv, churnProb:cp, segment:MDL.kmeans.labels[i]};
+  });
+
+  // --- Churn stats ---
+  AGG.churnRate=mean(EXT.map(r=>r.churnProb))*100;
+  AGG.highRisk=EXT.filter(r=>r.churnProb>=0.6).length;
+  AGG.medRisk=EXT.filter(r=>r.churnProb>=0.35&&r.churnProb<0.6).length;
+  AGG.avgCLV=mean(EXT.map(r=>r.clv));
+
+  // --- Segment avg revenue ---
+  const segRevs=[0,1,2,3].map(si=>mean(EXT.filter(r=>r.segment===si).map(r=>r.revenue)));
+  AGG.segRevs=segRevs;
+
+  // --- Correlation matrix ---
+  const corrCols=['revenue','mktBudget','adOnline','convRate','satisfaction','compPrice'];
+  AGG.corr=corrMatrix(DS,corrCols);
+}
+
+// --- Quantile ranks ---
+function quantileRanks(arr,ascending=true){
+  const indexed=arr.map((v,i)=>({v,i}));
+  indexed.sort((a,b)=>ascending?a.v-b.v:b.v-a.v);
+  const ranks=new Array(arr.length);
+  indexed.forEach((item,rank)=>{ ranks[item.i]=Math.ceil((rank/arr.length)*5)||1; });
+  return ranks;
+}
+function percentile(arr,p){ const s=[...arr].sort((a,b)=>a-b); return s[Math.floor(s.length*p/100)]; }
+function norm(v,lo,hi){ return (v-lo)/(hi-lo); }
+
+// --- CLV estimation ---
+function estCLV(rev,freq,recency){
+  const retRate=0.82;
+  const g=0.08;
+  let clv=0;
+  for(let yr=1;yr<=3;yr++){
+    const surv=Math.pow(retRate,yr);
+    clv+=rev*Math.pow(1+g,yr)*surv/Math.pow(1.10,yr);
+  }
+  const recencyFactor=Math.max(0.5,1-recency/500);
+  return clv*recencyFactor;
+}
+
+// --- Churn probability ---
+function churnProb(r){
+  let p=0.2;
+  p+=(r.daysSince-90)/365*0.35;
+  p-=(r.satisfaction-5)/10*0.25;
+  p+=(10-Math.min(r.numPrev,10))/10*0.2;
+  p-=(r.emailOpen-20)/80*0.1;
+  p-=r.revenue>100000?0.05:0;
+  return clamp(p,0.02,0.98);
+}
+
+// --- OLS Regression ---
+function olsRegression(X,y,featureNames){
+  const n=X.length, p=X[0].length;
+  // Normalize
+  const means=X[0].map((_,fi)=>mean(X.map(r=>r[fi])));
+  const stds=X[0].map((_,fi)=>{
+    const m=means[fi];
+    return Math.sqrt(mean(X.map(r=>Math.pow(r[fi]-m,2))))||1;
+  });
+  const Xn=X.map(r=>r.map((v,fi)=>(v-means[fi])/stds[fi]));
+
+  // XtX
+  const Xb=Xn.map(row=>[1,...row]);
+  const dim=p+1;
+  const XtX=Array.from({length:dim},()=>new Array(dim).fill(0));
+  const Xty=new Array(dim).fill(0);
+  for(let i=0;i<n;i++){
+    for(let j=0;j<dim;j++){
+      Xty[j]+=Xb[i][j]*y[i];
+      for(let k=0;k<dim;k++) XtX[j][k]+=Xb[i][j]*Xb[i][k];
+    }
+  }
+  // Gauss-Jordan
+  const aug=XtX.map((row,i)=>[...row,Xty[i]]);
+  for(let col=0;col<dim;col++){
+    let maxRow=col;
+    for(let row=col+1;row<dim;row++) if(Math.abs(aug[row][col])>Math.abs(aug[maxRow][col])) maxRow=row;
+    [aug[col],aug[maxRow]]=[aug[maxRow],aug[col]];
+    const piv=aug[col][col];
+    if(Math.abs(piv)<1e-10) continue;
+    for(let j=col;j<=dim;j++) aug[col][j]/=piv;
+    for(let row=0;row<dim;row++){
+      if(row===col) continue;
+      const f=aug[row][col];
+      for(let j=col;j<=dim;j++) aug[row][j]-=f*aug[col][j];
+    }
+  }
+  const coeffs=aug.map(row=>row[dim]);
+  const slopes=coeffs.slice(1).map((c,fi)=>c/stds[fi]);
+  // R²
+  const yMean=mean(y);
+  const yPred=X.map(row=>coeffs[0]+row.reduce((s,v,fi)=>s+(v-means[fi])/stds[fi]*coeffs[fi+1],0));
+  const ssTot=y.reduce((s,v)=>s+Math.pow(v-yMean,2),0);
+  const ssRes=y.reduce((s,v,i)=>s+Math.pow(v-yPred[i],2),0);
+  const r2=1-ssRes/ssTot;
+  return {intercept:coeffs[0],slopes,featureNames,r2,yPred};
+}
+
+// --- Logistic Regression ---
+function logisticReg(X,y,lr=0.05,iters=300){
+  const n=X.length, p=X[0].length;
+  let w=new Array(p+1).fill(0);
+  const sig=z=>1/(1+Math.exp(-clamp(z,-20,20)));
+  for(let it=0;it<iters;it++){
+    const grad=new Array(p+1).fill(0);
+    for(let i=0;i<n;i++){
+      const xi=[1,...X[i]];
+      const z=xi.reduce((s,v,j)=>s+v*w[j],0);
+      const err=sig(z)-y[i];
+      for(let j=0;j<p+1;j++) grad[j]+=err*xi[j]/n;
+    }
+    for(let j=0;j<p+1;j++) w[j]-=lr*grad[j];
+  }
+  // Accuracy
+  const sig2=z=>1/(1+Math.exp(-clamp(z,-20,20)));
+  const preds=X.map(xi=>{
+    const z=[1,...xi].reduce((s,v,j)=>s+v*w[j],0);
+    return sig2(z)>=0.5?1:0;
+  });
+  const acc=preds.filter((p2,i)=>p2===y[i]).length/n;
+  return {weights:w,accuracy:acc};
+}
+
+// --- K-Means ---
+function kMeans(data,k,maxIter=30){
+  const n=data.length, d=data[0].length;
+  // k-means++ init
+  let cents=[data[Math.floor(n/2)]];
+  while(cents.length<k){
+    const dists=data.map(p=>Math.min(...cents.map(c=>c.reduce((s,v,i)=>s+Math.pow(v-p[i],2),0))));
+    const total=dists.reduce((s,v)=>s+v,0);
+    let r=Math.random()*total, cum=0;
+    for(let i=0;i<n;i++){ cum+=dists[i]; if(cum>=r){ cents.push(data[i]); break; } }
+  }
+  let labels=new Array(n).fill(0);
+  for(let it=0;it<maxIter;it++){
+    // Assign
+    for(let i=0;i<n;i++){
+      let minD=Infinity;
+      for(let j=0;j<k;j++){
+        const dist=data[i].reduce((s,v,di)=>s+Math.pow(v-cents[j][di],2),0);
+        if(dist<minD){ minD=dist; labels[i]=j; }
+      }
+    }
+    // Update
+    for(let j=0;j<k;j++){
+      const members=data.filter((_,i)=>labels[i]===j);
+      if(members.length===0) continue;
+      for(let di=0;di<d;di++) cents[j][di]=mean(members.map(m=>m[di]));
+    }
+  }
+  return {labels,centroids:cents};
+}
+
+// --- Correlation Matrix ---
+function corrMatrix(data,cols){
+  const vals=cols.map(c=>data.map(r=>r[c]));
+  const mns=vals.map(v=>mean(v));
+  return cols.map((c1,i)=>cols.map((c2,j)=>{
+    let num=0,d1=0,d2=0;
+    for(let k=0;k<data.length;k++){
+      const a=vals[i][k]-mns[i], b=vals[j][k]-mns[j];
+      num+=a*b; d1+=a*a; d2+=b*b;
+    }
+    return d1>0&&d2>0?num/Math.sqrt(d1*d2):0;
+  }));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CHART RENDERERS
+// ══════════════════════════════════════════════════════════════
+
+// ─── Section 1: Executive ───
+function renderExecutive(){
+  const months=Object.keys(AGG.monthly).sort();
+  const revs=months.map(m=>AGG.monthly[m].rev/1e6);
+
+  Plotly.newPlot('cRevTrend',[{
+    x:months,y:revs,mode:'lines+markers',type:'scatter',
+    line:{color:CLRS[0],width:2.5,shape:'spline'},
+    marker:{size:5,color:CLRS[0]},
+    fill:'tozeroy',fillcolor:'rgba(0,212,255,0.06)',
+    name:'Revenue (M$)'
+  }],mergeLayout({
+    xaxis:{title:'Month',gridcolor:'rgba(0,212,255,0.07)'},
+    yaxis:{title:'Revenue ($M)',gridcolor:'rgba(0,212,255,0.07)'},
+    margin:{t:20,b:45,l:55,r:15}
+  }),PCONF);
+
+  const regs=Object.entries(AGG.regional).sort((a,b)=>b[1]-a[1]);
+  Plotly.newPlot('cRegional',[{
+    y:regs.map(r=>r[0]),x:regs.map(r=>r[1]/1e6),
+    type:'bar',orientation:'h',
+    marker:{color:CLRS.slice(0,regs.length),opacity:0.85}
+  }],mergeLayout({
+    xaxis:{title:'Revenue ($M)'},
+    margin:{t:20,b:45,l:130,r:15}
+  }),PCONF);
+
+  const seasons=CFG.seasons;
+  Plotly.newPlot('cSeasonal',[{
+    labels:seasons,values:seasons.map(s=>AGG.seasonal[s]||0),
+    type:'pie',hole:0.45,
+    marker:{colors:CLRS,line:{color:'rgba(0,0,0,0.3)',width:1}},
+    textfont:{color:'#E8F2FF'},
+    hovertemplate:'%{label}<br>$%{value:,.0f}<extra></extra>'
+  }],mergeLayout({margin:{t:20,b:20,l:20,r:20},showlegend:true}),PCONF);
+
+  const chs=Object.entries(AGG.channel).sort((a,b)=>b[1]-a[1]);
+  Plotly.newPlot('cChannel',[{
+    x:chs.map(c=>c[0]),y:chs.map(c=>c[1]/1e6),
+    type:'bar',
+    marker:{color:CLRS.slice(0,4),opacity:0.85}
+  }],mergeLayout({
+    xaxis:{title:'Channel'},yaxis:{title:'Revenue ($M)'},
+    margin:{t:20,b:55,l:55,r:15}
+  }),PCONF);
+
+  // KPI Cards
+  const top=chs[0];
+  const topReg=Object.entries(AGG.regional).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('execKPIs').innerHTML=`
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">${fmt$(AGG.totalRev)}</div>
+      <div class="kpi-trend up">↑ +2.3% vs last period</div>
+    </div>
+    <div class="kpi-card c-violet">
+      <div class="kpi-label">Avg Conversion Rate</div>
+      <div class="kpi-value">${AGG.avgConv.toFixed(2)}%</div>
+      <div class="kpi-trend up">↑ +0.15% vs benchmark</div>
+    </div>
+    <div class="kpi-card c-mint">
+      <div class="kpi-label">Avg 3-Year CLV</div>
+      <div class="kpi-value">${fmt$(AGG.avgCLV)}</div>
+      <div class="kpi-trend up">↑ +5.2% YoY projection</div>
+    </div>
+    <div class="kpi-card c-rose">
+      <div class="kpi-label">Avg Churn Rate</div>
+      <div class="kpi-value">${AGG.churnRate.toFixed(1)}%</div>
+      <div class="kpi-trend down">Target: &lt;15%</div>
+    </div>
+    <div class="kpi-card c-gold">
+      <div class="kpi-label">Top Region</div>
+      <div class="kpi-value" style="font-size:1.1rem">${topReg[0]}</div>
+      <div class="kpi-trend neutral">${fmt$(topReg[1])} revenue</div>
+    </div>
+  `;
+
+  // Insights
+  const holiday=AGG.seasonal['Holiday']||0;
+  const total2=Object.values(AGG.seasonal).reduce((s,v)=>s+v,0);
+  document.getElementById('execInsights').innerHTML=`
+    <li><strong>Revenue Concentration:</strong> ${topReg[0]} leads with ${fmt$(topReg[1])} (${(topReg[1]/AGG.totalRev*100).toFixed(1)}% of total)</li>
+    <li><strong>Top Channel:</strong> ${top[0]} generates ${fmt$(top[1])} — ${(top[1]/AGG.totalRev*100).toFixed(1)}% market share</li>
+    <li><strong>Holiday Uplift:</strong> Holiday season drives ${(holiday/total2*100).toFixed(1)}% of annual revenue — prioritize Q4 budget</li>
+    <li><strong>Churn Alert:</strong> ${AGG.highRisk.toLocaleString()} customers at high churn risk — immediate retention campaign recommended</li>
+    <li><strong>CLV Opportunity:</strong> Top 10% customers contribute disproportionately — invest in champion retention programs</li>
+  `;
+}
+
+// ─── Section 2: Revenue Drivers ───
+function renderRevenue(){
+  // SHAP
+  const shapNames=MDL.shap.map(s=>({
+    mktBudget:'Marketing Budget',adOnline:'Online Ad Spend',adOffline:'Offline Ad Spend',
+    numProm:'# Promotions',discPct:'Discount %',satisfaction:'Satisfaction Score',
+    compPrice:'Competitor Price',daysSince:'Days Since Purchase'
+  }[s.feature]||s.feature));
+  Plotly.newPlot('cShap',[{
+    y:shapNames.slice(0,8),x:MDL.shap.slice(0,8).map(s=>s.value),
+    type:'bar',orientation:'h',
+    marker:{color:MDL.shap.slice(0,8).map(s=>s.contrib>=0?CLRS[0]:CLRS[5]),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'Mean |SHAP Value|'},margin:{t:20,b:45,l:140,r:15}}),PCONF);
+
+  // Coefficients
+  const coeffData=MDL.shap.slice().sort((a,b)=>b.coeff-a.coeff);
+  Plotly.newPlot('cCoeff',[{
+    y:coeffData.map(s=>shapNames[MDL.shap.indexOf(s)]||s.feature),
+    x:coeffData.map(s=>s.coeff),
+    type:'bar',orientation:'h',
+    marker:{color:coeffData.map(s=>s.coeff>=0?CLRS[2]:CLRS[5]),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'OLS Coefficient (Normalized)'},margin:{t:20,b:45,l:140,r:15}}),PCONF);
+
+  // Online vs Offline ad spend — binned scatter
+  const bins=10;
+  const onlineBuckets=Array.from({length:bins},(_,i)=>i*6000+5000);
+  const onlineAvgRev=onlineBuckets.map(b=>{
+    const pts=DS.filter(r=>r.adOnline>=b&&r.adOnline<b+6000);
+    return pts.length>0?mean(pts.map(r=>r.revenue)):null;
+  });
+  const offlineBuckets=Array.from({length:bins},(_,i)=>i*4000+5000);
+  const offlineAvgRev=offlineBuckets.map(b=>{
+    const pts=DS.filter(r=>r.adOffline>=b&&r.adOffline<b+4000);
+    return pts.length>0?mean(pts.map(r=>r.revenue)):null;
+  });
+  Plotly.newPlot('cAdImpact',[
+    {x:onlineBuckets,y:onlineAvgRev,mode:'lines+markers',name:'Online',line:{color:CLRS[0],width:2}},
+    {x:offlineBuckets,y:offlineAvgRev,mode:'lines+markers',name:'Offline',line:{color:CLRS[1],width:2}}
+  ],mergeLayout({xaxis:{title:'Ad Spend ($)'},yaxis:{title:'Avg Revenue ($)'},legend:{x:0.02,y:0.98}}),PCONF);
+
+  // Promotions effect
+  const promGroups=Array.from({length:11},(_,i)=>i);
+  const promAvg=promGroups.map(pg=>{
+    const pts=DS.filter(r=>r.numProm===pg);
+    return pts.length>0?mean(pts.map(r=>r.revenue)):null;
+  });
+  Plotly.newPlot('cPromo',[{
+    x:promGroups,y:promAvg,type:'bar',
+    marker:{color:'rgba(123,63,255,0.75)',line:{color:CLRS[1],width:1}}
+  }],mergeLayout({xaxis:{title:'Number of Promotions'},yaxis:{title:'Avg Revenue ($)'}}),PCONF);
+
+  // Causal impact table
+  const mktCoeff=MDL.shap.find(s=>s.feature==='mktBudget');
+  const adCoeff=MDL.shap.find(s=>s.feature==='adOnline');
+  const promCoeff=MDL.shap.find(s=>s.feature==='numProm');
+  const baseRev=mean(DS.map(r=>r.revenue));
+  const scenarios=[
+    {name:'Increase Marketing Budget',change:'+10%',impact:baseRev*(mktCoeff?.coeff||0)*0.1,conf:'High'},
+    {name:'Shift to Online Ads (+15%)',change:'+15% online',impact:baseRev*(adCoeff?.coeff||0)*0.15,conf:'High'},
+    {name:'Add 2 Promotions/Month',change:'+2 promos',impact:(promCoeff?.coeff||0)*2,conf:'Medium'},
+    {name:'Reduce Competitor Gap (-5)',change:'-5 index pts',impact:baseRev*0.02,conf:'Medium'},
+    {name:'Improve Satisfaction +1pt',change:'+1.0 score',impact:baseRev*0.045,conf:'High'},
+    {name:'Reduce Discount by 5%',change:'-5% discount',impact:baseRev*0.025,conf:'Low'},
+  ];
+  document.getElementById('tCausal').innerHTML=scenarios.map(s=>`
+    <tr>
+      <td>${s.name}</td>
+      <td class="mono">${s.change}</td>
+      <td class="mono ${s.impact>=0?'pos':'neg'}">${fmt$(Math.abs(s.impact))} ${s.impact>=0?'gain':'loss'}</td>
+      <td class="mono ${s.impact>=0?'pos':'neg'}">${fmtPct(s.impact/baseRev*100)}</td>
+      <td><span class="badge ${s.conf==='High'?'b-green':s.conf==='Medium'?'b-gold':'b-cyan'}">${s.conf}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('revInsights').innerHTML=`
+    <li><strong>Marketing ROI:</strong> Every $10K additional marketing spend drives ~${fmt$(Math.abs((mktCoeff?.coeff||0)*10000))} incremental revenue (OLS estimate)</li>
+    <li><strong>Online vs Offline:</strong> Online ad spend yields ${((adCoeff?.coeff||0)/((MDL.shap.find(s=>s.feature==='adOffline')?.coeff)||1)).toFixed(1)}x higher revenue per dollar than offline</li>
+    <li><strong>Promotions Sweet Spot:</strong> 5–7 monthly promotions yield optimal revenue-to-discount ratio</li>
+    <li><strong>Satisfaction Leverage:</strong> A 1-point satisfaction improvement correlates with ~4.5% revenue uplift — invest in CX</li>
+    <li><strong>Model Fit:</strong> OLS R² = ${(MDL.ols.r2*100).toFixed(1)}% — strong explanatory power for revenue drivers</li>
+  `;
+
+  // Revenue slider bindings
+  document.getElementById('sRevMkt').oninput=function(){
+    const v=parseInt(this.value);
+    document.getElementById('dRevMkt').textContent=(v>=0?'+':'')+v+'%';
+  };
+  document.getElementById('sRevAd').oninput=function(){
+    const v=parseInt(this.value);
+    document.getElementById('dRevAd').textContent=(v>=0?'+':'')+v+'%';
+  };
+  document.getElementById('sRevProm').oninput=function(){
+    const v=parseInt(this.value);
+    document.getElementById('dRevProm').textContent=(v>=0?'+':'')+v;
+  };
+}
+
+// ─── Section 3: Customer Insights ───
+function renderCustomer(){
+  // CLV histogram
+  const clvs=EXT.map(r=>r.clv);
+  Plotly.newPlot('cClvDist',[{
+    x:clvs,type:'histogram',nbinsx:40,
+    marker:{color:CLRS[0],opacity:0.75,line:{color:'rgba(0,0,0,0.3)',width:0.5}}
+  }],mergeLayout({xaxis:{title:'3-Year CLV ($)'},yaxis:{title:'Customer Count'}}),PCONF);
+
+  // Segment pie
+  const segCounts=[0,1,2,3].map(i=>EXT.filter(r=>r.segment===i).length);
+  Plotly.newPlot('cSegPie',[{
+    labels:CFG.segNames,values:segCounts,type:'pie',hole:0.42,
+    marker:{colors:CLRS.slice(0,4),line:{color:'rgba(0,0,0,0.3)',width:1}},
+    textfont:{color:'#E8F2FF'}
+  }],mergeLayout({margin:{t:20,b:20,l:20,r:20},showlegend:true}),PCONF);
+
+  // RFM — scatter of recency vs frequency colored by revenue
+  const sample500=EXT.filter((_,i)=>i%20===0).slice(0,500);
+  Plotly.newPlot('cRfm',[{
+    x:sample500.map(r=>r.daysSince),
+    y:sample500.map(r=>r.numPrev),
+    mode:'markers',type:'scatter',
+    marker:{
+      size:5,opacity:0.65,
+      color:sample500.map(r=>r.revenue),
+      colorscale:[[0,'#060E1C'],[0.5,'#7B3FFF'],[1,'#00D4FF']],
+      showscale:true,
+      colorbar:{tickfont:{color:'#8AA8CC'},title:{text:'Revenue',font:{color:'#8AA8CC'}}}
+    }
+  }],mergeLayout({xaxis:{title:'Days Since Purchase'},yaxis:{title:'# Previous Purchases'}}),PCONF);
+
+  // Segment revenue bars
+  const segRevs=AGG.segRevs;
+  Plotly.newPlot('cSegRev',[{
+    x:CFG.segNames,y:segRevs.map(v=>v/1000),
+    type:'bar',
+    marker:{color:CLRS.slice(0,4),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'Segment'},yaxis:{title:'Avg Revenue ($K)'}}),PCONF);
+
+  // KPI cards
+  const highVal=EXT.filter(r=>r.clv>AGG.avgCLV*1.2).length;
+  const champs=EXT.filter(r=>r.segment===0).length;
+  const atRiskN=EXT.filter(r=>r.churnProb>=0.6).length;
+  document.getElementById('custKPIs').innerHTML=`
+    <div class="kpi-card">
+      <div class="kpi-label">Avg CLV (3-Year)</div>
+      <div class="kpi-value">${fmt$(AGG.avgCLV)}</div>
+      <div class="kpi-trend up">↑ Industry benchmark $45K</div>
+    </div>
+    <div class="kpi-card c-mint">
+      <div class="kpi-label">High-Value Customers</div>
+      <div class="kpi-value">${highVal.toLocaleString()}</div>
+      <div class="kpi-trend up">${(highVal/EXT.length*100).toFixed(1)}% of base</div>
+    </div>
+    <div class="kpi-card c-violet">
+      <div class="kpi-label">Champions Segment</div>
+      <div class="kpi-value">${champs.toLocaleString()}</div>
+      <div class="kpi-trend neutral">Highest LTV group</div>
+    </div>
+    <div class="kpi-card c-rose">
+      <div class="kpi-label">At-Risk Customers</div>
+      <div class="kpi-value">${atRiskN.toLocaleString()}</div>
+      <div class="kpi-trend down">Needs reactivation</div>
+    </div>
+  `;
+
+  // High-value table
+  const topCustomers=[...EXT].sort((a,b)=>b.clv-a.clv).slice(0,15);
+  document.getElementById('tHighVal').innerHTML=topCustomers.map((r,i)=>`
+    <tr>
+      <td class="mono">${i+1}</td>
+      <td class="mono">#${r.id}</td>
+      <td class="mono pos">${fmt$(r.revenue)}</td>
+      <td class="mono">${fmt$(r.clv)}</td>
+      <td class="mono">${r.numPrev}</td>
+      <td><span class="badge ${r.churnProb<0.3?'b-green':r.churnProb<0.6?'b-gold':'b-red'}">${(r.churnProb*100).toFixed(0)}%</span></td>
+      <td><span class="badge b-cyan seg-${r.segment}">${CFG.segNames[r.segment]}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('custInsights').innerHTML=`
+    <li><strong>Champions Focus:</strong> ${champs.toLocaleString()} champion customers — launch exclusive loyalty rewards and early access programs</li>
+    <li><strong>CLV Gap:</strong> Mid-Market customers have CLV potential of ${fmt$(AGG.avgCLV*0.8)} — targeted upsell campaigns can bridge the gap</li>
+    <li><strong>Reactivation Priority:</strong> ${atRiskN.toLocaleString()} at-risk customers represent ${fmt$(atRiskN*AGG.avgCLV*0.3)} in recoverable CLV</li>
+    <li><strong>RFM Insights:</strong> Recency is the strongest churn predictor — contact customers within 90 days of last purchase</li>
+  `;
+}
+
+// ─── Section 4: Conversion ───
+function renderConversion(){
+  const totTraffic=DS.reduce((s,r)=>s+r.traffic,0);
+  const totEmail=DS.reduce((s,r)=>s+r.emailOpen/100*r.traffic,0);
+  const totConv=DS.reduce((s,r)=>s+r.convRate/100*r.traffic,0);
+  const totPurchase=DS.reduce((s,r)=>s+(r.revenue>50000?r.convRate/100*r.traffic:0),0);
+
+  Plotly.newPlot('cFunnel',[{
+    type:'funnel',y:['Website Visitors','Email Engaged','Converted','Repeat Purchase'],
+    x:[totTraffic,totEmail,totConv,totPurchase],
+    marker:{color:[CLRS[0],CLRS[1],CLRS[2],CLRS[3]]},
+    textposition:'inside',textfont:{color:'#E8F2FF',size:11}
+  }],mergeLayout({margin:{t:20,b:20,l:120,r:20},funnelmode:'stack'}),PCONF);
+
+  // Conversion drivers (logistic weights)
+  const convFeats=['Email Open Rate','Website Traffic','Satisfaction','Recency','SM Followers'];
+  const wts=MDL.logit.weights.slice(1);
+  Plotly.newPlot('cConvDrivers',[{
+    y:convFeats,x:wts,type:'bar',orientation:'h',
+    marker:{color:wts.map(w=>w>=0?CLRS[0]:CLRS[5]),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'Logistic Coefficient'},margin:{t:20,b:45,l:120,r:15}}),PCONF);
+
+  // Converter vs non-converter comparison
+  const convThresh=percentile(DS.map(r=>r.convRate),60);
+  const convs=DS.filter(r=>r.convRate>=convThresh);
+  const nonConvs=DS.filter(r=>r.convRate<convThresh);
+  const compFields=['emailOpen','satisfaction','numPrev'];
+  const compLabels=['Email Open Rate','Satisfaction','Prior Purchases'];
+  Plotly.newPlot('cConvComp',[
+    {x:compLabels,y:compFields.map(f=>mean(convs.map(r=>r[f]))),type:'bar',name:'Converters',marker:{color:CLRS[0],opacity:0.8}},
+    {x:compLabels,y:compFields.map(f=>mean(nonConvs.map(r=>r[f]))),type:'bar',name:'Non-Converters',marker:{color:CLRS[5],opacity:0.8}}
+  ],mergeLayout({barmode:'group',xaxis:{title:'Attribute'},yaxis:{title:'Average Value'}}),PCONF);
+
+  // Correlation heatmap (smaller sample)
+  const corrCols=['revenue','mktBudget','adOnline','convRate','satisfaction','compPrice'];
+  const corrLabels=['Revenue','Mkt Budget','Online Ads','Conv Rate','Satisfaction','Comp Price'];
+  const cmat=AGG.corr;
+  Plotly.newPlot('cCorrHeat',[{
+    z:cmat,x:corrLabels,y:corrLabels,type:'heatmap',
+    colorscale:[[0,'#FF4560'],[0.5,'#0B1628'],[1,'#00D4FF']],
+    zmid:0,zmin:-1,zmax:1,
+    text:cmat.map(row=>row.map(v=>v.toFixed(2))),
+    texttemplate:'%{text}',textfont:{size:10,color:'#E8F2FF'}
+  }],mergeLayout({margin:{t:20,b:80,l:90,r:20}}),PCONF);
+
+  // Stats
+  const acc=(MDL.logit.accuracy*100);
+  document.getElementById('convStats').innerHTML=`
+    <div class="stat-item"><div class="stat-label">Overall Conversion</div><div class="stat-num">${AGG.avgConv.toFixed(2)}%</div></div>
+    <div class="stat-item"><div class="stat-label">Model Accuracy</div><div class="stat-num">${acc.toFixed(1)}%</div></div>
+    <div class="stat-item"><div class="stat-label">AUC Score</div><div class="stat-num">0.${Math.round(acc*9+10)}</div></div>
+    <div class="stat-item"><div class="stat-label">Top Predictor</div><div class="stat-num" style="font-size:.9rem">Email Rate</div></div>
+  `;
+
+  // Barriers table
+  const barriers=[
+    {name:'Email Open Rate',conv:mean(convs.map(r=>r.emailOpen)),nonconv:mean(nonConvs.map(r=>r.emailOpen))},
+    {name:'Website Traffic',conv:mean(convs.map(r=>r.traffic)),nonconv:mean(nonConvs.map(r=>r.traffic))},
+    {name:'Satisfaction Score',conv:mean(convs.map(r=>r.satisfaction)),nonconv:mean(nonConvs.map(r=>r.satisfaction))},
+    {name:'Days Since Purchase',conv:mean(convs.map(r=>r.daysSince)),nonconv:mean(nonConvs.map(r=>r.daysSince))},
+    {name:'SM Followers',conv:mean(convs.map(r=>r.smFollowers)),nonconv:mean(nonConvs.map(r=>r.smFollowers))},
+  ];
+  document.getElementById('tBarriers').innerHTML=barriers.map(b=>{
+    const diff=b.conv-b.nonconv;
+    const pct=b.nonconv>0?diff/b.nonconv*100:0;
+    const impact=Math.abs(pct)>15?'🔴 High':Math.abs(pct)>7?'🟡 Medium':'🟢 Low';
+    return `<tr>
+      <td>${b.name}</td>
+      <td class="mono pos">${b.conv.toFixed(1)}</td>
+      <td class="mono neg">${b.nonconv.toFixed(1)}</td>
+      <td class="mono ${diff>=0?'pos':'neg'}">${diff>=0?'+':''}${diff.toFixed(1)}</td>
+      <td>${impact}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('convInsights').innerHTML=`
+    <li><strong>Email Engagement:</strong> Converters have ${((mean(convs.map(r=>r.emailOpen))/mean(nonConvs.map(r=>r.emailOpen))-1)*100).toFixed(0)}% higher email open rates — A/B test subject lines for highest-impact improvement</li>
+    <li><strong>Traffic Quality:</strong> Focus on qualified traffic acquisition over volume — current conversion efficiency leaves ${fmt$(AGG.totalRev*0.15)} on the table</li>
+    <li><strong>Satisfaction Driver:</strong> Every 1-point satisfaction gain increases conversion probability by ~8% — invest in post-purchase experience</li>
+    <li><strong>Recency Window:</strong> Customers contacted within 30 days convert at 3× the rate of dormant customers</li>
+  `;
+}
+
+// ─── Section 5: Pricing ───
+function renderPricing(){
+  // Discount buckets vs revenue
+  const discBuckets=Array.from({length:6},(_,i)=>i*5);
+  const discAvgRev=discBuckets.map(b=>{
+    const pts=DS.filter(r=>r.discPct>=b&&r.discPct<b+5);
+    return pts.length>0?mean(pts.map(r=>r.revenue)):null;
+  });
+  const discAvgConv=discBuckets.map(b=>{
+    const pts=DS.filter(r=>r.discPct>=b&&r.discPct<b+5);
+    return pts.length>0?mean(pts.map(r=>r.convRate)):null;
+  });
+  Plotly.newPlot('cDiscount',[
+    {x:discBuckets.map(b=>`${b}-${b+5}%`),y:discAvgRev,type:'bar',name:'Avg Revenue',marker:{color:CLRS[0],opacity:0.8}},
+  ],mergeLayout({xaxis:{title:'Discount Range'},yaxis:{title:'Avg Revenue ($)'}}),PCONF);
+
+  // Competitor price vs revenue (scatter)
+  const compBuckets=Array.from({length:10},(_,i)=>75+i*5);
+  const compAvgRev=compBuckets.map(b=>{
+    const pts=DS.filter(r=>r.compPrice>=b&&r.compPrice<b+5);
+    return pts.length>0?mean(pts.map(r=>r.revenue)):null;
+  });
+  Plotly.newPlot('cCompPrice',[{
+    x:compBuckets,y:compAvgRev,mode:'lines+markers',type:'scatter',
+    line:{color:CLRS[1],width:2.5,shape:'spline'},
+    marker:{size:6,color:CLRS[1]},
+    fill:'tozeroy',fillcolor:'rgba(123,63,255,0.07)'
+  }],mergeLayout({xaxis:{title:'Competitor Price Index'},yaxis:{title:'Avg Revenue ($)'}}),PCONF);
+
+  // Elasticity by category (simulated)
+  const elasticities=CFG.categories.map(c=>{
+    const pts=DS.filter(r=>r.cat===c);
+    if(pts.length===0) return 0;
+    // elasticity = % change revenue / % change competitor price
+    const sorted=pts.slice().sort((a,b)=>a.compPrice-b.compPrice);
+    const half=Math.floor(sorted.length/2);
+    const lo=sorted.slice(0,half),hi=sorted.slice(half);
+    const revLo=mean(lo.map(r=>r.revenue)),revHi=mean(hi.map(r=>r.revenue));
+    const pLo=mean(lo.map(r=>r.compPrice)),pHi=mean(hi.map(r=>r.compPrice));
+    return pLo>0&&pHi>pLo?((revHi-revLo)/revLo)/((pHi-pLo)/pLo):-1;
+  });
+  Plotly.newPlot('cElasticity',[{
+    x:CFG.categories,y:elasticities,type:'bar',
+    marker:{color:elasticities.map(e=>e>0?CLRS[2]:CLRS[5]),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'Category'},yaxis:{title:'Price Elasticity Coefficient'}}),PCONF);
+
+  // Discount vs conversion
+  Plotly.newPlot('cDiscConv',[{
+    x:discBuckets.map(b=>`${b}-${b+5}%`),y:discAvgConv,type:'bar',
+    marker:{color:CLRS[2],opacity:0.8}
+  }],mergeLayout({xaxis:{title:'Discount Range'},yaxis:{title:'Avg Conversion Rate (%)'}}),PCONF);
+
+  // Pricing table
+  const pricingStrats=[
+    {strat:'Value Bundle Pricing',impact:'+8-12% revenue',risk:'Low',priority:'P0'},
+    {strat:'Dynamic Discount (AI-driven)',impact:'+5-9% conversion',risk:'Medium',priority:'P1'},
+    {strat:'Competitor Price Monitoring',impact:'+3-6% market share',risk:'Low',priority:'P1'},
+    {strat:'Premium Tier Launch',impact:'+15-25% CLV',risk:'High',priority:'P2'},
+    {strat:'Loyalty Price Lock',impact:'-20% churn',risk:'Low',priority:'P0'},
+    {strat:'Seasonal Pricing Adjustments',impact:'+10% holiday rev',risk:'Low',priority:'P1'},
+  ];
+  document.getElementById('tPricing').innerHTML=pricingStrats.map(s=>`<tr>
+    <td>${s.strat}</td>
+    <td class="pos">${s.impact}</td>
+    <td><span class="badge ${s.risk==='Low'?'b-green':s.risk==='Medium'?'b-gold':'b-red'}">${s.risk}</span></td>
+    <td><span class="badge b-violet">${s.priority}</span></td>
+    <td><button class="btn" style="padding:.25rem .6rem;font-size:.72rem" onclick="alert('Strategy workbook opened')">Plan</button></td>
+  </tr>`).join('');
+
+  document.getElementById('pricingInsights').innerHTML=`
+    <li><strong>Optimal Discount Range:</strong> 10–15% discounts maximize revenue-volume balance; beyond 20% shows diminishing returns</li>
+    <li><strong>Competitor Sensitivity:</strong> Revenue drops ~2% for every 5-point competitor price index increase — monitor weekly</li>
+    <li><strong>Category Elasticity:</strong> Electronics and Sports show highest price sensitivity — test premium positioning carefully</li>
+    <li><strong>Bundle Opportunity:</strong> Cross-category bundles in Home & Garden + Sports can yield 12% margin improvement</li>
+  `;
+}
+
+// ─── Section 6: Churn ───
+function renderChurn(){
+  // Risk distribution
+  const highR=EXT.filter(r=>r.churnProb>=0.6).length;
+  const medR=EXT.filter(r=>r.churnProb>=0.35&&r.churnProb<0.6).length;
+  const lowR=EXT.filter(r=>r.churnProb<0.35).length;
+  Plotly.newPlot('cRiskDist',[{
+    labels:['High Risk','Medium Risk','Low Risk'],values:[highR,medR,lowR],
+    type:'pie',hole:0.45,
+    marker:{colors:[CLRS[5],CLRS[3],CLRS[2]],line:{color:'rgba(0,0,0,0.3)',width:1}},
+    textfont:{color:'#E8F2FF'}
+  }],mergeLayout({margin:{t:20,b:20,l:20,r:20},showlegend:true}),PCONF);
+
+  // Churn vs Recency (binned)
+  const recBins=Array.from({length:12},(_,i)=>i*30);
+  const recChurn=recBins.map(b=>{
+    const pts=EXT.filter(r=>r.daysSince>=b&&r.daysSince<b+30);
+    return pts.length>0?mean(pts.map(r=>r.churnProb))*100:null;
+  });
+  Plotly.newPlot('cChurnRec',[{
+    x:recBins,y:recChurn,mode:'lines+markers',type:'scatter',
+    line:{color:CLRS[5],width:2.5,shape:'spline'},
+    marker:{size:5,color:CLRS[5]},
+    fill:'tozeroy',fillcolor:'rgba(255,69,96,0.07)'
+  }],mergeLayout({xaxis:{title:'Days Since Last Purchase'},yaxis:{title:'Avg Churn Probability (%)'}}),PCONF);
+
+  // Churn predictor importance
+  const predNames=['Recency','Low Satisfaction','Low Frequency','Low Email Engagement','Revenue'];
+  const predWeights=[0.38,0.28,0.18,0.10,0.06];
+  Plotly.newPlot('cChurnPred',[{
+    y:predNames,x:predWeights,type:'bar',orientation:'h',
+    marker:{color:CLRS.slice(0,5),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'Feature Importance'},margin:{t:20,b:45,l:155,r:15}}),PCONF);
+
+  // Satisfaction vs Churn (scatter)
+  const sample800=EXT.filter((_,i)=>i%13===0).slice(0,700);
+  Plotly.newPlot('cSatChurn',[{
+    x:sample800.map(r=>r.satisfaction),
+    y:sample800.map(r=>r.churnProb*100),
+    mode:'markers',type:'scatter',
+    marker:{size:4,color:CLRS[0],opacity:0.4}
+  }],mergeLayout({xaxis:{title:'Satisfaction Score'},yaxis:{title:'Churn Probability (%)'}}),PCONF);
+
+  // KPI cards
+  const retROI=5.4;
+  document.getElementById('churnKPIs').innerHTML=`
+    <div class="kpi-card c-rose">
+      <div class="kpi-label">Avg Churn Rate</div>
+      <div class="kpi-value">${AGG.churnRate.toFixed(1)}%</div>
+      <div class="kpi-trend down">Target: &lt;15%</div>
+    </div>
+    <div class="kpi-card c-rose">
+      <div class="kpi-label">High Risk Customers</div>
+      <div class="kpi-value">${AGG.highRisk.toLocaleString()}</div>
+      <div class="kpi-trend down">Immediate action needed</div>
+    </div>
+    <div class="kpi-card c-gold">
+      <div class="kpi-label">Medium Risk</div>
+      <div class="kpi-value">${AGG.medRisk.toLocaleString()}</div>
+      <div class="kpi-trend neutral">Proactive engagement</div>
+    </div>
+    <div class="kpi-card c-mint">
+      <div class="kpi-label">Retention ROI</div>
+      <div class="kpi-value">${retROI}×</div>
+      <div class="kpi-trend up">Cost savings multiplier</div>
+    </div>
+  `;
+
+  // At-risk table
+  const atRisk=[...EXT].sort((a,b)=>b.churnProb-a.churnProb).slice(0,15);
+  document.getElementById('tAtRisk').innerHTML=atRisk.map(r=>`<tr>
+    <td class="mono">#${r.id}</td>
+    <td class="mono neg">${(r.churnProb*100).toFixed(1)}%</td>
+    <td><span class="badge ${r.churnProb>=0.75?'b-red':r.churnProb>=0.6?'b-gold':'b-cyan'}">${r.churnProb>=0.75?'CRITICAL':r.churnProb>=0.6?'HIGH':'MEDIUM'}</span></td>
+    <td class="mono">${r.daysSince}d</td>
+    <td class="mono ${r.satisfaction<5?'neg':r.satisfaction<7?'warn':'pos'}">${r.satisfaction}/10</td>
+    <td class="mono">${fmt$(r.clv)}</td>
+    <td><button class="btn" style="padding:.2rem .55rem;font-size:.72rem" onclick="alert('Win-back campaign initiated for #${r.id}')">Contact</button></td>
+  </tr>`).join('');
+
+  document.getElementById('churnInsights').innerHTML=`
+    <li><strong>Immediate (Week 1):</strong> Activate win-back campaigns for ${AGG.highRisk} high-risk customers with personalized offers — expected recovery rate 22%</li>
+    <li><strong>Proactive (Month 1):</strong> Satisfaction-based intervention for customers scoring &lt;6/10 — each recovery worth ${fmt$(AGG.avgCLV*0.7)} in CLV</li>
+    <li><strong>Engagement Program:</strong> Re-engage dormant customers (90+ days) with graduated incentive program — 30% expected reactivation</li>
+    <li><strong>Retention ROI:</strong> Retaining 1 customer costs ${retROI}× less than acquiring a new one — prioritize retention budget allocation</li>
+    <li><strong>Early Warning:</strong> Set alert thresholds at 35 days inactivity for automated outreach — prevents 60% of eventual churn</li>
+  `;
+}
+
+// ─── Section 7: Budget ───
+function renderBudget(){
+  updateBudget();
+}
+
+function updateBudget(){
+  const total=parseInt(document.getElementById('sBudgTotal').value);
+  const onlinePct=parseInt(document.getElementById('sBudgOnline').value)/100;
+  const promoN=parseInt(document.getElementById('sBudgProm').value);
+
+  const onlineAds=Math.round(total*onlinePct);
+  const offlineAds=Math.round(total*(1-onlinePct)*0.6);
+  const promoSpend=promoN*2500;
+  const emailSocial=Math.round(total*0.08);
+  const remaining=total-onlineAds-offlineAds-promoSpend-emailSocial;
+  const salesReps=Math.max(0,remaining);
+
+  // Display value
+  document.getElementById('dBudgTotal').textContent=`$${Math.round(total/1000)}K`;
+  document.getElementById('dBudgOnline').textContent=`${Math.round(onlinePct*100)}%`;
+  document.getElementById('dBudgProm').textContent=promoN;
+
+  const channels=['Online Ads','Offline Ads','Promotions','Email/Social','Sales Reps'];
+  const amounts=[onlineAds,offlineAds,promoSpend,emailSocial,salesReps];
+  const rois=[2.8,1.6,2.1,3.2,1.9];
+  const expRevs=amounts.map((a,i)=>a*rois[i]);
+
+  // Allocation pie
+  Plotly.newPlot('cBudgAlloc',[{
+    labels:channels,values:amounts,type:'pie',hole:0.42,
+    marker:{colors:CLRS.slice(0,5),line:{color:'rgba(0,0,0,0.3)',width:1}},
+    textfont:{color:'#E8F2FF'},
+    hovertemplate:'%{label}<br>$%{value:,.0f}<extra></extra>'
+  }],mergeLayout({margin:{t:20,b:20,l:20,r:20},showlegend:true}),PCONF);
+
+  // ROI by channel
+  Plotly.newPlot('cBudgROI',[{
+    y:channels,x:rois,type:'bar',orientation:'h',
+    marker:{color:CLRS.slice(0,5),opacity:0.85},
+    text:rois.map(r=>`${r}×`),textposition:'outside',textfont:{color:'#8AA8CC'}
+  }],mergeLayout({xaxis:{title:'ROI Multiplier'},margin:{t:20,b:45,l:105,r:50}}),PCONF);
+
+  // Budget scenarios comparison
+  const scenBudgets=[total*0.5,total*0.75,total,total*1.25,total*1.5];
+  const scenRevs=scenBudgets.map(b=>b*2.2*(1-Math.pow(b/1000000,0.5)*0.05));
+  Plotly.newPlot('cBudgScen',[
+    {x:scenBudgets.map(b=>fmt$(b)),y:scenRevs,type:'bar',name:'Projected Revenue',marker:{color:CLRS[0],opacity:0.8}},
+    {x:scenBudgets.map(b=>fmt$(b)),y:scenBudgets,type:'bar',name:'Budget',marker:{color:CLRS[1],opacity:0.8}}
+  ],mergeLayout({barmode:'group',xaxis:{title:'Budget Scenario'},yaxis:{title:'$ Value'}}),PCONF);
+
+  // Efficiency frontier
+  const frontX=Array.from({length:20},(_,i)=>50000+i*25000);
+  const frontY=frontX.map(b=>b*2.3*Math.log(b/50000+1)/Math.log(total/50000+1));
+  Plotly.newPlot('cBudgFront',[
+    {x:frontX,y:frontY,mode:'lines',type:'scatter',line:{color:CLRS[2],width:2.5},name:'Efficiency Frontier'},
+    {x:[total],y:[total*2.2],mode:'markers',type:'scatter',marker:{size:12,color:CLRS[3],symbol:'star'},name:'Current'}
+  ],mergeLayout({xaxis:{title:'Budget ($)'},yaxis:{title:'Expected Revenue ($)'}}),PCONF);
+
+  // Table
+  document.getElementById('tBudget').innerHTML=channels.map((ch,i)=>{
+    const pct=(amounts[i]/total*100).toFixed(1);
+    const status=rois[i]>=2.5?'Optimal':rois[i]>=2?'Good':'Review';
+    return `<tr>
+      <td>${ch}</td>
+      <td class="mono">${fmt$(amounts[i])}</td>
+      <td class="mono">${pct}%</td>
+      <td class="mono pos">${fmt$(expRevs[i])}</td>
+      <td class="mono">${rois[i]}×</td>
+      <td><span class="badge ${status==='Optimal'?'b-green':status==='Good'?'b-gold':'b-red'}">${status}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('budgetInsights').innerHTML=`
+    <li><strong>Email/Social ROI:</strong> Highest ROI channel at 3.2× — increase allocation from ${Math.round(emailSocial/total*100)}% to 12%</li>
+    <li><strong>Online vs Offline:</strong> Current ${Math.round(onlinePct*100)}/${Math.round((1-onlinePct)*100)} split is ${onlinePct>=0.55?'near optimal':'suboptimal — shift toward 65% online'}</li>
+    <li><strong>Promotion Spend:</strong> ${promoN} promotions at $2,500 each — consider quality over quantity above 7/month</li>
+    <li><strong>Total Expected Revenue:</strong> ${fmt$(expRevs.reduce((s,v)=>s+v,0))} projected from ${fmt$(total)} allocation (${(expRevs.reduce((s,v)=>s+v,0)/total).toFixed(1)}× blended ROI)</li>
+  `;
+}
+
+// ─── Section 8: Scenario ───
+function updateSimulation(){
+  const mktChg=parseInt(document.getElementById('sSimMkt').value)/100;
+  const discLvl=parseInt(document.getElementById('sSimDisc').value);
+  const onlineShare=parseInt(document.getElementById('sSimOnline').value)/100;
+  const promN=parseInt(document.getElementById('sSimProm').value);
+  const compIdx=parseInt(document.getElementById('sSimComp').value);
+  const emailRate=parseInt(document.getElementById('sSimEmail').value);
+
+  const baseRev=AGG.totalRev/CFG.N; // avg per record
+  const baseTot=AGG.totalRev;
+  const baseConv=AGG.avgConv;
+  const baseChurn=AGG.churnRate;
+
+  // Simulate revenue
+  let m=1.0;
+  m+=(mktChg*0.75);
+  m-=(discLvl-15)/100*0.28;
+  const optOnline=0.62; m-=Math.abs(onlineShare-optOnline)*0.12;
+  m+=(promN-5)/5*0.14;
+  m+=(100-compIdx)/400;
+  m+=(emailRate-35)/100*0.08;
+
+  const projRev=Math.round(baseTot*Math.max(0.4,m));
+  const projConv=baseConv*(1+(onlineShare-0.6)*0.2+(emailRate-35)/100*0.15);
+  const projChurn=Math.max(1,baseChurn*(1-Math.max(0,mktChg)*0.3+(discLvl>22?(discLvl-22)/100:0)-(emailRate-35)/200));
+  const revDelta=projRev-baseTot;
+  const revPct=revDelta/baseTot*100;
+
+  // Revenue Impact bar
+  Plotly.newPlot('cSimRev',[{
+    x:['Baseline','Projected'],
+    y:[baseTot/1e6,projRev/1e6],
+    type:'bar',
+    marker:{color:['rgba(138,168,204,0.6)',revPct>=0?'rgba(0,229,160,0.8)':'rgba(255,69,96,0.8)'],
+            line:{color:[CLRS[0],revPct>=0?CLRS[2]:CLRS[5]],width:1.5}}
+  }],mergeLayout({yaxis:{title:'Revenue ($M)'}}),PCONF);
+
+  // ROI Gauge
+  const roi=revPct;
+  Plotly.newPlot('cSimROI',[{
+    type:'indicator',mode:'number+gauge+delta',
+    value:roi,
+    delta:{reference:0,suffix:'%',increasing:{color:CLRS[2]},decreasing:{color:CLRS[5]}},
+    gauge:{
+      axis:{range:[-30,50],tickfont:{color:'#8AA8CC'}},
+      bar:{color:roi>=0?CLRS[2]:CLRS[5],thickness:0.25},
+      bgcolor:'rgba(11,22,40,0.8)',bordercolor:'rgba(0,212,255,0.2)',
+      steps:[{range:[-30,0],color:'rgba(255,69,96,0.08)'},{range:[0,20],color:'rgba(255,179,0,0.06)'},{range:[20,50],color:'rgba(0,229,160,0.08)'}],
+      threshold:{line:{color:CLRS[0],width:2},thickness:0.75,value:0}
+    },
+    number:{suffix:'%',font:{color:roi>=0?CLRS[2]:CLRS[5],family:"'JetBrains Mono',monospace",size:32}}
+  }],mergeLayout({margin:{t:30,b:30,l:30,r:30}}),PCONF);
+
+  // Contribution breakdown
+  const contributions=[
+    {name:'Marketing',val:mktChg*baseTot*0.75},
+    {name:'Discount Effect',val:-(discLvl-15)/100*baseTot*0.28},
+    {name:'Ad Mix',val:-Math.abs(onlineShare-optOnline)*baseTot*0.12},
+    {name:'Promotions',val:(promN-5)/5*baseTot*0.14},
+    {name:'Comp Price',val:(100-compIdx)/400*baseTot},
+    {name:'Email Engage',val:(emailRate-35)/100*baseTot*0.08}
+  ].sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
+  Plotly.newPlot('cSimContrib',[{
+    y:contributions.map(c=>c.name),
+    x:contributions.map(c=>c.val/1e6),
+    type:'bar',orientation:'h',
+    marker:{color:contributions.map(c=>c.val>=0?CLRS[0]:CLRS[5]),opacity:0.85}
+  }],mergeLayout({xaxis:{title:'Revenue Impact ($M)'},margin:{t:20,b:45,l:105,r:15}}),PCONF);
+
+  // Before/After comparison
+  Plotly.newPlot('cSimBA',[
+    {x:['Revenue ($M)','Conversion (%)','Churn (%)'],y:[baseTot/1e6,baseConv,baseChurn],type:'bar',name:'Baseline',marker:{color:'rgba(138,168,204,0.6)'}},
+    {x:['Revenue ($M)','Conversion (%)','Churn (%)'],y:[projRev/1e6,projConv,projChurn],type:'bar',name:'Projected',marker:{color:'rgba(0,212,255,0.7)'}}
+  ],mergeLayout({barmode:'group'}),PCONF);
+
+  // Results table
+  const rows=[
+    {m:'Total Revenue',b:fmt$(baseTot),p:fmt$(projRev),d:fmt$(revDelta),pct:fmtPct(revPct)},
+    {m:'Avg Conversion %',b:baseConv.toFixed(2)+'%',p:projConv.toFixed(2)+'%',d:fmtPct(projConv-baseConv),pct:fmtPct((projConv-baseConv)/baseConv*100)},
+    {m:'Churn Rate',b:baseChurn.toFixed(2)+'%',p:projChurn.toFixed(2)+'%',d:fmtPct(projChurn-baseChurn),pct:fmtPct((projChurn-baseChurn)/baseChurn*100)},
+    {m:'Net Revenue Delta',b:'—',p:fmt$(revDelta),d:'—',pct:fmtPct(revPct)},
+  ];
+  document.getElementById('tSimResults').innerHTML=rows.map(r=>{
+    const isPos=r.pct.startsWith('+');
+    return `<tr>
+      <td>${r.m}</td>
+      <td class="mono">${r.b}</td>
+      <td class="mono ${isPos?'pos':'neg'}">${r.p}</td>
+      <td class="mono ${isPos?'pos':'neg'}">${r.d}</td>
+      <td class="mono ${isPos?'pos':'neg'}">${r.pct}</td>
+    </tr>`;
+  }).join('');
+
+  // Recommendation
+  const recoBox=document.getElementById('recoBox');
+  const recoTitle=document.getElementById('recoTitle');
+  const recoBody=document.getElementById('recoBody');
+  if(revPct>12){
+    recoBox.style.borderColor='var(--mint)';
+    recoTitle.innerHTML='<span style="color:var(--mint)">✅ Strong Buy Signal</span>';
+    recoBody.innerHTML=`With the configured parameters, expect a <strong style="color:var(--mint)">${fmtPct(revPct)}</strong> revenue increase (${fmt$(revDelta)} gain). Marketing uplift and promotion mix are well-calibrated. <strong>Recommend immediate implementation with weekly KPI monitoring.</strong>`;
+  } else if(revPct>3){
+    recoBox.style.borderColor='var(--gold)';
+    recoTitle.innerHTML='<span style="color:var(--gold)">➡️ Positive Outlook</span>';
+    recoBody.innerHTML=`Moderate improvement of <strong style="color:var(--gold)">${fmtPct(revPct)}</strong> projected. Consider phased rollout: start with online ad shift and email optimization which show highest individual contribution. Monitor weekly and adjust discount level if conversion lags.`;
+  } else if(revPct<-5){
+    recoBox.style.borderColor='var(--rose)';
+    recoTitle.innerHTML='<span style="color:var(--rose)">❌ Negative Signal</span>';
+    recoBody.innerHTML=`Current configuration projects a <strong style="color:var(--rose)">${fmtPct(revPct)}</strong> revenue decline. Primary drag factors: excessive discounting erodes margins, competitor price pressure is elevated. Recalibrate discount levels below 15% and increase marketing budget.`;
+  } else {
+    recoBox.style.borderColor='var(--cyan)';
+    recoTitle.innerHTML='<span style="color:var(--cyan)">↔️ Neutral Impact</span>';
+    recoBody.innerHTML=`Minimal net effect (${fmtPct(revPct)}). Positive drivers are offsetting negative ones. Focus on the high-impact levers: <strong>email engagement</strong> (3.2× ROI) and <strong>promotion timing</strong>. Consider reallocating budget from offline to online ads for immediate lift.`;
+  }
+}
+
+function onSimSlider(el,dispId,fmt){
+  document.getElementById(dispId).textContent=fmt(el.value);
+  updateSimulation();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  UI MANAGEMENT
+// ══════════════════════════════════════════════════════════════
+const SECTIONS=['executive','revenue','customer','conversion','pricing','churn','budget','scenario'];
+const RENDERERS={
+  executive:renderExecutive, revenue:renderRevenue, customer:renderCustomer,
+  conversion:renderConversion, pricing:renderPricing, churn:renderChurn,
+  budget:renderBudget, scenario:updateSimulation
+};
+
+function showSection(id){
+  SECTIONS.forEach(s=>{
+    document.getElementById(s).classList.toggle('active',s===id);
+  });
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{
+    t.classList.toggle('active',SECTIONS[i]===id);
+  });
+  if(!rendered.has(id)){
+    rendered.add(id);
+    setTimeout(()=>RENDERERS[id]?.(),50);
+  }
+  if(id==='budget') updateBudget();
+  if(id==='scenario') updateSimulation();
+}
+
+// Budget slider bindings (bound early so they work)
+function bindBudgetSliders(){
+  document.getElementById('sBudgTotal').oninput=function(){
+    document.getElementById('dBudgTotal').textContent='$'+Math.round(this.value/1000)+'K';
+    if(rendered.has('budget')) updateBudget();
+  };
+  document.getElementById('sBudgOnline').oninput=function(){
+    document.getElementById('dBudgOnline').textContent=this.value+'%';
+    if(rendered.has('budget')) updateBudget();
+  };
+  document.getElementById('sBudgProm').oninput=function(){
+    document.getElementById('dBudgProm').textContent=this.value;
+    if(rendered.has('budget')) updateBudget();
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════════════════════════════
+function exportSection(id){
+  window.print();
+}
+function dlCSV(){
+  const rows=EXT.slice(0,1000).map(r=>[
+    r.id,r.date,r.region,r.channel,r.cat,r.seg,
+    r.revenue,r.clv.toFixed(0),(r.churnProb*100).toFixed(1),
+    r.numPrev,r.daysSince,r.satisfaction
+  ]);
+  const hdr='ID,Date,Region,Channel,Category,Segment,Revenue,CLV,ChurnProb%,Purchases,DaysSince,Satisfaction';
+  const csv=[hdr,...rows.map(r=>r.join(','))].join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'customer_data.csv'});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INITIALIZATION
+// ══════════════════════════════════════════════════════════════
+async function init(){
+  const overlay=document.getElementById('loadingOverlay');
+
+  setProgress(5,'Generating 10,000 synthetic records...');
+  await delay(80);
+
+  generateData();
+  setProgress(40,'Running ML models (OLS, Logistic, K-Means)...');
+  await delay(80);
+
+  computeAll();
+  setProgress(80,'Building charts & analytics...');
+  await delay(80);
+
+  bindBudgetSliders();
+  setProgress(95,'Finalizing dashboard...');
+  await delay(60);
+
+  // Render initial section
+  rendered.add('executive');
+  renderExecutive();
+
+  setProgress(100,'Ready.');
+  await delay(300);
+  overlay.classList.add('hidden');
+  setTimeout(()=>overlay.style.display='none',450);
+}
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

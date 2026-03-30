@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Causal Attribution Intelligence · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Fraunces:ital,wght@0,300;0,700;1,300;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #0b0f07;
+  --bg2:      #111608;
+  --bg3:      #171f0d;
+  --border:   #2a3a18;
+  --text:     #f0f2e8;
+  --muted:    #7a8a62;
+  --olive:    #8fa83e;
+  --olive2:   #b5d44e;
+  --olive-dim:#4d6020;
+  --white:    #f0f2e8;
+  --red:      #e07040;
+  --red2:     rgba(224,112,64,0.12);
+  --blue:     #6bcb77;
+  --mono:     'DM Mono', monospace;
+  --display:  'Fraunces', serif;
+  --body:     'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NOISE TEXTURE */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* LAYOUT */
+.shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 50;
+}
+.logo-wrap {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--olive);
+  margin-bottom: 6px;
+}
+.logo-name {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+.logo-name span { color: var(--white); font-style: italic; }
+
+.nav-section {
+  padding: 16px 12px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  margin: 1px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  transition: all 0.18s;
+  border: 1px solid transparent;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active {
+  background: rgba(143,168,62,0.1);
+  border-color: rgba(143,168,62,0.2);
+  color: var(--olive);
+}
+.nav-icon {
+  width: 16px; height: 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.nav-item.active .nav-icon { opacity: 1; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.run-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+.run-time { font-size: 11px; color: var(--muted); }
+
+/* MAIN */
+.main { margin-left: 220px; flex: 1; }
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0;
+  background: rgba(11,12,15,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 40;
+}
+.topbar-left {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.topbar-left .sep { opacity: 0.3; }
+.topbar-left .current { color: var(--text); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.status-dot {
+  width: 7px; height: 7px;
+  background: var(--white);
+  border-radius: 50%;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(143,168,62,0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(143,168,62,0); }
+}
+.status-txt { font-family: var(--mono); font-size: 10px; color: var(--white); }
+.date-chip {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* CONTENT */
+.content { padding: 32px; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* PAGE HEADER */
+.page-hdr { margin-bottom: 28px; }
+.page-hdr h1 {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.page-hdr h1 em { font-style: italic; color: var(--olive); }
+.page-hdr .sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* KPI ROW */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+.kpi-card:hover { border-color: var(--border2); }
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.kpi-card.k-teal::before { background: var(--white); }
+.kpi-card.k-gold::before { background: var(--olive); }
+.kpi-card.k-red::before { background: var(--red); }
+.kpi-card.k-blue::before { background: var(--blue); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.kpi-card:nth-child(4) { animation-delay: 0.2s; }
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.kpi-val {
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.kpi-val.teal { color: var(--white); }
+.kpi-val.gold { color: var(--olive); }
+.kpi-val.red  { color: var(--red); }
+.kpi-val.blue { color: var(--blue); }
+
+.kpi-delta {
+  font-family: var(--mono);
+  font-size: 11px;
+  display: flex; align-items: center; gap: 6px;
+}
+.delta-pos { color: var(--white); }
+.delta-neg { color: var(--red); }
+.delta-neu { color: var(--olive); }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* GRID LAYOUTS */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-65-35 { display: grid; grid-template-columns: 1.85fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-35-65 { display: grid; grid-template-columns: 1fr 1.85fr; gap: 16px; margin-bottom: 16px; }
+
+/* CARD */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+}
+.card-hdr {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.card-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.card-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.badge-teal { background: rgba(143,168,62,0.15); color: var(--white); }
+.badge-gold { background: rgba(143,168,62,0.12); color: var(--olive); }
+.badge-red  { background: var(--red2); color: var(--red); }
+.card-body { padding: 20px; }
+.card-body-sm { padding: 14px 20px; }
+
+/* CHART WRAPPERS */
+.chart-wrap { position: relative; }
+.chart-wrap canvas { display: block; }
+
+/* LEGEND */
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-sq  { width: 10px; height: 4px; border-radius: 1px; flex-shrink: 0; }
+
+/* CHANNEL TABLE */
+.ch-table { width: 100%; border-collapse: collapse; }
+.ch-table thead tr { border-bottom: 1px solid var(--border); }
+.ch-table thead th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 12px;
+  text-align: right;
+  font-weight: 400;
+}
+.ch-table thead th:first-child { text-align: left; }
+.ch-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.ch-table tbody tr:last-child { border-bottom: none; }
+.ch-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.ch-table tbody td { padding: 11px 12px; font-size: 13px; text-align: right; }
+.ch-table tbody td:first-child { text-align: left; }
+
+.ch-name {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 500;
+}
+.ch-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ch-type { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+.diff-bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.diff-bar-bg {
+  width: 70px; height: 5px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.diff-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+/* MINI SPARKLINE */
+.sparkline-wrap { display: flex; align-items: flex-end; gap: 2px; height: 28px; }
+.spark-bar { flex: 1; border-radius: 1px 1px 0 0; min-width: 3px; }
+
+/* HEATMAP */
+.heatmap-grid {
+  display: grid;
+  gap: 4px;
+}
+.hm-cell {
+  height: 44px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  transition: transform 0.15s;
+  cursor: default;
+}
+.hm-cell:hover { transform: scale(1.04); }
+.hm-label-row { display: flex; gap: 4px; margin-bottom: 4px; }
+.hm-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+.hm-row { display: flex; gap: 4px; align-items: center; margin-bottom: 4px; }
+.hm-row-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  min-width: 72px;
+  text-align: right;
+  padding-right: 8px;
+}
+
+/* OVERLAP */
+.overlap-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.overlap-row:last-child { border-bottom: none; }
+.overlap-ch { font-size: 12px; font-weight: 500; min-width: 110px; }
+.overlap-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  position: relative;
+  overflow: visible;
+}
+.overlap-fill {
+  position: absolute;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--white);
+  opacity: 0.7;
+}
+.overlap-danger {
+  position: absolute;
+  top: -2px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--red);
+  opacity: 0.5;
+}
+.overlap-pct {
+  font-family: var(--mono);
+  font-size: 11px;
+  min-width: 36px;
+  text-align: right;
+}
+.overlap-ok  { color: var(--white); }
+.overlap-warn{ color: var(--olive); }
+.overlap-bad { color: var(--red);  }
+
+/* BUDGET SLIDER */
+.budget-section { padding: 0; }
+.budget-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(143,168,62,0.04);
+}
+.budget-total-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.budget-total-val { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--white); }
+.budget-lift {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--white);
+  background: rgba(143,168,62,0.15);
+  padding: 4px 12px;
+  border-radius: 3px;
+}
+
+.budget-sliders { padding: 16px 20px; }
+.budget-ch-row { margin-bottom: 18px; }
+.budget-ch-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.budget-ch-name { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.budget-ch-vals { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.budget-ch-vals span { color: var(--text); font-weight: 500; }
+.slider-wrap { position: relative; }
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--olive);
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(143,168,62,0.2);
+  transition: box-shadow 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 5px rgba(143,168,62,0.25);
+}
+.slider-track {
+  height: 4px;
+  background: var(--olive);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.budget-impact {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+.impact-curr { color: var(--muted); }
+.impact-new  { color: var(--white); }
+.impact-arrow { color: var(--border2); }
+
+/* GEO */
+.geo-exp-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.geo-exp-row:last-child { border-bottom: none; }
+.geo-status {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.geo-name { font-size: 13px; font-weight: 500; flex: 1; }
+.geo-dmas { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 55px; }
+.geo-lift-val { font-family: var(--display); font-size: 16px; font-weight: 700; min-width: 55px; text-align: right; }
+.geo-ci { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 80px; text-align: right; }
+.geo-conf { font-family: var(--mono); font-size: 10px; min-width: 32px; text-align: right; }
+
+/* CI PANEL */
+.ci-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ci-row:last-child { border-bottom: none; }
+.ci-ch { font-size: 12px; font-weight: 500; min-width: 100px; }
+.ci-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  position: relative;
+}
+.ci-zero {
+  position: absolute;
+  left: 33%;
+  top: -3px;
+  width: 1px;
+  height: 12px;
+  background: var(--border2);
+}
+.ci-bar {
+  position: absolute;
+  height: 100%;
+  border-radius: 3px;
+}
+.ci-point {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 2px solid var(--bg2);
+}
+.ci-val { font-family: var(--mono); font-size: 11px; min-width: 55px; text-align: right; }
+.ci-geo { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 55px; text-align: right; }
+
+/* PLACEBO */
+.placebo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.placebo-row:last-child { border-bottom: none; }
+.pl-ch { font-size: 12px; font-weight: 500; min-width: 105px; }
+.pl-ate { font-family: var(--mono); font-size: 12px; min-width: 60px; text-align: center; }
+.pl-pval { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 55px; text-align: right; }
+.pl-result { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 2px; }
+.pl-pass { background: rgba(143,168,62,0.15); color: var(--white); }
+.pl-fail { background: var(--red2); color: var(--red); }
+
+/* ALERT STRIP */
+.alert-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  background: rgba(143,168,62,0.07);
+  border: 1px solid rgba(143,168,62,0.18);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  animation: fadeUp 0.4s ease both;
+}
+.alert-icon { font-size: 16px; flex-shrink: 0; }
+.alert-txt { flex: 1; font-size: 13px; }
+.alert-txt strong { color: var(--olive); }
+.alert-cta {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 12px;
+  border: 1px solid rgba(143,168,62,0.3);
+  border-radius: 3px;
+  color: var(--olive);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.alert-cta:hover { background: rgba(143,168,62,0.12); }
+
+/* TOOLTIP */
+.tooltip {
+  position: absolute;
+  background: #1e2028;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 200;
+  white-space: nowrap;
+  display: none;
+}
+
+/* TABS */
+.tab-bar {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--bg3);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 7px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.tab-item.active { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
+.tab-item:hover:not(.active) { color: var(--text); }
+.tab-view { display: none; }
+.tab-view.active { display: block; }
+
+/* DR RETURNS */
+.dr-legend {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* WATERFALL */
+.waterfall-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.waterfall-item:last-child { border-bottom: none; }
+.wf-label { font-size: 12px; min-width: 120px; }
+.wf-bar-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+.wf-track { flex: 1; height: 18px; background: rgba(255,255,255,0.04); border-radius: 3px; position: relative; overflow: hidden; }
+.wf-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-family: var(--mono); font-size: 10px; }
+.wf-total { font-family: var(--display); font-size: 14px; font-weight: 700; min-width: 65px; text-align: right; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+/* RESPONSIVE */
+@media(max-width:900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .kpi-row { grid-template-columns: repeat(2,1fr); }
+  .grid-2, .grid-65-35, .grid-35-65 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-mark">Causal Intelligence</div>
+    <div class="logo-name"><span>Attribution</span> Engine</div>
+  </div>
+
+  <div class="nav-section">Analytics</div>
+  <div class="nav-item active" onclick="showView('overview',this)">
+    <span class="nav-icon">◈</span> Executive Overview
+  </div>
+  <div class="nav-item" onclick="showView('channels',this)">
+    <span class="nav-icon">⊞</span> Channel Analysis
+  </div>
+  <div class="nav-item" onclick="showView('budget',this)">
+    <span class="nav-icon">◎</span> Budget Optimizer
+  </div>
+
+  <div class="nav-section">Validation</div>
+  <div class="nav-item" onclick="showView('geo',this)">
+    <span class="nav-icon">⊕</span> Geo-Lift Results
+  </div>
+  <div class="nav-item" onclick="showView('model',this)">
+    <span class="nav-icon">∫</span> Model Diagnostics
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="run-badge">● Model Live</div>
+    <div class="run-time">Last run: Mar 19, 2026 · 02:00 UTC</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span>Attribution Engine</span>
+      <span class="sep">/</span>
+      <span class="current" id="topbar-title">Executive Overview</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-dot"></div>
+      <span class="status-txt">Geo-Validated</span>
+      <div class="date-chip">Q1 2026 · Wk 12</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ======= OVERVIEW ======= -->
+    <div id="view-overview" class="view active">
+      <div class="page-hdr">
+        <h1>Causal <em>Attribution</em> Intelligence</h1>
+        <div class="sub">Doubly Robust · Geo-Holdout Validated · Bayesian MMM Calibrated</div>
+      </div>
+
+      <div class="alert-strip">
+        <span class="alert-icon">⚡</span>
+        <div class="alert-txt"><strong>Budget Alert:</strong> Paid Search Brand ATE diverges 78% below Last-Click — $1.4M in potential reallocation identified this quarter.</div>
+        <div class="alert-cta" onclick="showView('budget',document.querySelector('.nav-item:nth-child(5)'))">Optimize →</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card k-teal">
+          <div class="kpi-label">Incremental Revenue</div>
+          <div class="kpi-val teal">$7.2M</div>
+          <div class="kpi-delta"><span class="delta-neg">↓ vs $11.4M attributed</span></div>
+          <div class="kpi-sub">True causal contribution</div>
+        </div>
+        <div class="kpi-card k-gold">
+          <div class="kpi-label">Attribution Gap</div>
+          <div class="kpi-val gold">$4.2M</div>
+          <div class="kpi-delta"><span class="delta-neu">Last-Click double-count</span></div>
+          <div class="kpi-sub">Misallocated budget pressure</div>
+        </div>
+        <div class="kpi-card k-blue">
+          <div class="kpi-label">Model Confidence</div>
+          <div class="kpi-val blue">87%</div>
+          <div class="kpi-delta"><span class="delta-pos">✓ Geo-validated</span></div>
+          <div class="kpi-sub">ATE within ±22% of Geo-Lift</div>
+        </div>
+        <div class="kpi-card k-red">
+          <div class="kpi-label">Reallocation Lift</div>
+          <div class="kpi-val" style="color:var(--text)">+18%</div>
+          <div class="kpi-delta"><span class="delta-pos">↑ Incremental GMV potential</span></div>
+          <div class="kpi-sub">At current total budget</div>
+        </div>
+      </div>
+
+      <div class="grid-65-35">
+        <div class="card">
+          <div class="card-hdr">
+            <div>
+              <div class="card-title">Last-Click vs Causal ATE — Revenue Attribution</div>
+              <div class="card-sub">Comparison per channel — current spend period</div>
+            </div>
+            <div class="card-badge badge-teal">Geo-Validated</div>
+          </div>
+          <div class="card-body" style="padding-bottom:12px;">
+            <div class="chart-wrap" style="height:260px;">
+              <canvas id="compareChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-sq" style="background:rgba(74,158,255,0.55)"></div> Last-Click Attributed</div>
+            <div class="legend-item"><div class="legend-sq" style="background:var(--teal)"></div> Causal ATE Estimate</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div>
+              <div class="card-title">Incremental Revenue Waterfall</div>
+              <div class="card-sub">Causal contribution by channel</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="waterfall"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Propensity Overlap Health</div>
+          </div>
+          <div class="card-body-sm">
+            <div id="overlapMini"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Weekly Incremental GMV Trend</div>
+          </div>
+          <div class="card-body" style="padding-bottom:8px;">
+            <div class="chart-wrap" style="height:110px;">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Model Validation Status</div>
+          </div>
+          <div class="card-body-sm">
+            <div id="validationStatus"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= CHANNELS ======= -->
+    <div id="view-channels" class="view">
+      <div class="page-hdr">
+        <h1>Channel <em>Analysis</em></h1>
+        <div class="sub">ATE Estimates · HTE Heatmap · Diminishing Returns · Confidence Intervals</div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item active" onclick="switchTab('ch','att',this)">Attribution Table</div>
+        <div class="tab-item" onclick="switchTab('ch','hte',this)">HTE Heatmap</div>
+        <div class="tab-item" onclick="switchTab('ch','dr',this)">Diminishing Returns</div>
+        <div class="tab-item" onclick="switchTab('ch','ci',this)">Confidence Intervals</div>
+      </div>
+
+      <div id="ch-att" class="tab-view active">
+        <div class="card">
+          <div class="card-hdr">
+            <div>
+              <div class="card-title">Full Attribution Comparison — All Channels</div>
+              <div class="card-sub">Last-Click vs Causal ATE · sorted by Causal ROAS</div>
+            </div>
+            <div class="card-badge badge-gold">Q1 2026</div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="ch-table" id="channelTable"></table>
+          </div>
+        </div>
+      </div>
+
+      <div id="ch-hte" class="tab-view">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">HTE Heatmap — ATE by Segment</div>
+              <div class="card-sub">Incremental $ lift per exposed user</div>
+            </div>
+            <div class="card-body">
+              <div id="heatmapGrid"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">Segment ATE Distribution</div>
+              <div class="card-sub">Paid Social · by customer segment</div>
+            </div>
+            <div class="card-body" style="padding-bottom:12px;">
+              <div class="chart-wrap" style="height:200px;">
+                <canvas id="segChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div> New Users</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div> Returning</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> High-Value</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ch-dr" class="tab-view">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Diminishing Returns — Spend vs Incremental Revenue</div>
+            <div class="card-sub">Current spend marked · based on Bayesian MMM posterior</div>
+          </div>
+          <div class="card-body" style="padding-bottom:12px;">
+            <div class="chart-wrap" style="height:300px;">
+              <canvas id="drChart"></canvas>
+            </div>
+          </div>
+          <div class="dr-legend">
+            <div class="legend-item"><div class="legend-sq" style="background:var(--teal)"></div> Paid Social</div>
+            <div class="legend-item"><div class="legend-sq" style="background:var(--gold)"></div> Paid Search NB</div>
+            <div class="legend-item"><div class="legend-sq" style="background:var(--blue)"></div> Email / CRM</div>
+            <div class="legend-item"><div class="legend-sq" style="background:var(--red)"></div> PS Brand</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--text);width:6px;height:6px;border-radius:50%"></div> Current spend</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ch-ci" class="tab-view">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">ATE Confidence Intervals — 90% CI</div>
+            <div class="card-sub">Point estimate + CI band vs Geo-Lift experimental result</div>
+          </div>
+          <div class="card-body">
+            <div id="ciPanel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= BUDGET ======= -->
+    <div id="view-budget" class="view">
+      <div class="page-hdr">
+        <h1>Budget <em>Optimizer</em></h1>
+        <div class="sub">Marginal ROAS Curves · Scenario Simulation · Action Thresholds</div>
+      </div>
+
+      <div class="grid-65-35">
+        <div class="card">
+          <div class="card-hdr">
+            <div>
+              <div class="card-title">Scenario Simulator — Drag to Reallocate</div>
+              <div class="card-sub">Total budget held constant · incremental GMV updates live</div>
+            </div>
+            <div id="liftBadge" class="card-badge badge-teal">+18% Lift</div>
+          </div>
+          <div class="budget-section">
+            <div class="budget-total-row">
+              <div>
+                <div class="budget-total-label">Projected Incremental GMV</div>
+                <div class="budget-total-val" id="projGMV">$8.50M</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="budget-total-label">vs Current $7.2M</div>
+                <div id="liftPct" class="budget-lift">+18.0%</div>
+              </div>
+            </div>
+            <div class="budget-sliders" id="budgetSliders"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Marginal ROAS at Current Allocation</div>
+            <div class="card-sub">Per additional $1K spend</div>
+          </div>
+          <div class="card-body" style="padding-bottom:8px;">
+            <div class="chart-wrap" style="height:220px;">
+              <canvas id="mroasChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Recommended Reallocation — Action Table</div>
+          <div class="card-sub">Based on optimized Marginal ROAS · 90% CI shown</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="ch-table" id="allocTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= GEO ======= -->
+    <div id="view-geo" class="view">
+      <div class="page-hdr">
+        <h1>Geo-Lift <em>Results</em></h1>
+        <div class="sub">Holdout Experiments · Difference-in-Differences · Model Calibration</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card k-teal"><div class="kpi-label">Experiments Run</div><div class="kpi-val teal">4</div><div class="kpi-sub">This quarter</div></div>
+        <div class="kpi-card k-gold"><div class="kpi-label">DMAs Tested</div><div class="kpi-val gold">68</div><div class="kpi-sub">Treatment + control pairs</div></div>
+        <div class="kpi-card k-blue"><div class="kpi-label">Avg DiD Precision</div><div class="kpi-val blue">±8%</div><div class="kpi-sub">Mean CI width / point est.</div></div>
+        <div class="kpi-card k-red"><div class="kpi-label">Model Calibration</div><div class="kpi-val" style="color:var(--text)">±22%</div><div class="kpi-sub">ATE vs Geo-Lift avg deviation</div></div>
+      </div>
+
+      <div class="grid-65-35">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Geo-Holdout Experiment Registry</div>
+            <div class="card-sub">All executed experiments with DiD result and calibration impact</div>
+          </div>
+          <div class="card-body">
+            <div id="geoRegistry"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Experiment Calendar</div>
+            <div class="card-sub">Planned · Running · Completed</div>
+          </div>
+          <div class="card-body">
+            <div id="geoCalendar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">DiD Weekly Revenue — Treatment vs Control</div>
+          <div class="card-sub">Paid Social Holdout · Q4 2025 · 8 DMAs</div>
+        </div>
+        <div class="card-body" style="padding-bottom:12px;">
+          <div class="chart-wrap" style="height:220px;">
+            <canvas id="didChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-sq" style="background:var(--teal)"></div> Control DMAs</div>
+          <div class="legend-item"><div class="legend-sq" style="background:var(--gold)"></div> Treatment DMAs (holdout)</div>
+          <div class="legend-item"><div class="legend-sq" style="background:rgba(255,255,255,.2)"></div> Pre-period</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= MODEL ======= -->
+    <div id="view-model" class="view">
+      <div class="page-hdr">
+        <h1>Model <em>Diagnostics</em></h1>
+        <div class="sub">Propensity Overlap · Placebo Tests · MMM Fit · Failure Mode Audit</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Propensity Score Overlap</div>
+            <div class="card-sub">% of users in safe zone [0.1, 0.9]</div>
+          </div>
+          <div class="card-body">
+            <div id="overlapPanel"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Propensity Distribution — Paid Social</div>
+            <div class="card-sub">Treatment vs control density</div>
+          </div>
+          <div class="card-body" style="padding-bottom:12px;">
+            <div class="chart-wrap" style="height:180px;">
+              <canvas id="propChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Placebo Test Results</div>
+            <div class="card-sub">ATE should be ≈ 0 for zero-spend channels</div>
+          </div>
+          <div class="card-body">
+            <div id="placeboPanel"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Bayesian MMM Fit</div>
+            <div class="card-sub">Predicted vs actual weekly revenue</div>
+          </div>
+          <div class="card-body" style="padding-bottom:12px;">
+            <div class="chart-wrap" style="height:180px;">
+              <canvas id="mmmFitChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-sq" style="background:var(--teal)"></div> Actual GMV</div>
+            <div class="legend-item"><div class="legend-sq" style="background:var(--gold);opacity:.7"></div> MMM Predicted</div>
+            <div class="legend-item"><div class="legend-sq" style="background:rgba(143,168,62,.2)"></div> 90% Credible Interval</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">Failure Mode Audit</div>
+          <div class="card-sub">Model risk assessment — updated weekly</div>
+        </div>
+        <div class="card-body">
+          <div id="failureAudit"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /shell -->
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const channels = [
+  { name:'Paid Social',      color:'#f0f2e8', spend: 900,  lastClick:14, causalATE:34, causalRoas:4.8, mRoas:3.2, overlap:82, liftGeo:+17, ciLow:28, ciHigh:41, geoResult:31 },
+  { name:'Email / CRM',      color:'#b5d44e', spend: 180,  lastClick:8,  causalATE:28, causalRoas:4.2, mRoas:5.1, overlap:77, liftGeo:+24, ciLow:22, ciHigh:35, geoResult:26 },
+  { name:'PS Non-Brand',     color:'#6bcb77', spend:1100,  lastClick:31, causalATE:22, causalRoas:2.9, mRoas:2.4, overlap:74, liftGeo:+19, ciLow:17, ciHigh:28, geoResult:20 },
+  { name:'SEO / Organic',    color:'#6bcb77', spend: 120,  lastClick:12, causalATE:18, causalRoas:2.1, mRoas:1.8, overlap:69, liftGeo:+14, ciLow:12, ciHigh:24, geoResult:16 },
+  { name:'Display',          color:'#f0f2e8', spend: 380,  lastClick:9,  causalATE:11, causalRoas:1.5, mRoas:1.2, overlap:71, liftGeo:+9,  ciLow:6,  ciHigh:17, geoResult:10 },
+  { name:'PS Brand',         color:'#e05c5c', spend: 680,  lastClick:62, causalATE:4,  causalRoas:0.4, mRoas:0.3, overlap:61, liftGeo:+2,  ciLow:-3, ciHigh:11, geoResult:3  },
+];
+
+// ============================================================
+// NAV
+// ============================================================
+const titles = {overview:'Executive Overview',channels:'Channel Analysis',budget:'Budget Optimizer',geo:'Geo-Lift Results',model:'Model Diagnostics'};
+function showView(id, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('topbar-title').textContent = titles[id];
+  renderView(id);
+}
+function switchTab(group, id, el) {
+  document.querySelectorAll(`#ch-att,#ch-hte,#ch-dr,#ch-ci`).forEach(v=>v.classList.remove('active'));
+  el.closest('.tab-bar').querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`ch-${id}`).classList.add('active');
+  el.classList.add('active');
+}
+
+const rendered = {};
+function renderView(id) {
+  if(rendered[id]) return;
+  rendered[id] = true;
+  if(id==='overview')  renderOverview();
+  if(id==='channels')  renderChannels();
+  if(id==='budget')    renderBudget();
+  if(id==='geo')       renderGeo();
+  if(id==='model')     renderModel();
+}
+
+// ============================================================
+// CHART DEFAULTS
+// ============================================================
+Chart.defaults.color = 'rgba(232,228,220,0.45)';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 10;
+const gridOpts = { color:'rgba(255,255,255,0.05)', tickColor:'transparent', borderColor:'rgba(255,255,255,0.07)' };
+const noLegend = { plugins:{ legend:{ display:false } } };
+
+// ============================================================
+// OVERVIEW
+// ============================================================
+function renderOverview() {
+  // Compare chart
+  const ctx1 = document.getElementById('compareChart').getContext('2d');
+  new Chart(ctx1, {
+    type:'bar',
+    data:{
+      labels: channels.map(c=>c.name.replace('/ ','/ ')),
+      datasets:[
+        { label:'Last-Click', data: channels.map(c=>c.lastClick), backgroundColor:'rgba(74,158,255,0.45)', borderRadius:3, borderSkipped:false },
+        { label:'Causal ATE', data: channels.map(c=>c.causalATE), backgroundColor: channels.map(c=>c.color+'cc'), borderRadius:3, borderSkipped:false }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      ...noLegend,
+      scales:{
+        x:{ grid:gridOpts, ticks:{ font:{size:9}, maxRotation:0 } },
+        y:{ grid:gridOpts, ticks:{ callback:v=>'$'+v }, title:{ display:true, text:'Revenue Attribution ($M)', color:'rgba(232,228,220,0.3)', font:{size:9} } }
+      },
+      plugins:{ tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y}M` } } }
+    }
+  });
+
+  // Waterfall
+  const wf = document.getElementById('waterfall');
+  const total = channels.reduce((s,c)=>s+c.causalATE,0);
+  const sorted = [...channels].sort((a,b)=>b.causalATE-a.causalATE);
+  wf.innerHTML = sorted.map(c=>{
+    const pct = (c.causalATE/total*100).toFixed(0);
+    return `<div class="waterfall-item">
+      <div class="wf-label"><span style="color:${c.color};margin-right:6px">●</span>${c.name}</div>
+      <div class="wf-bar-wrap">
+        <div class="wf-track"><div class="wf-fill" style="width:${pct}%;background:${c.color}33"><span style="color:${c.color}">${pct}%</span></div></div>
+        <div class="wf-total" style="color:${c.color}">$${c.causalATE}M</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Overlap mini
+  const ov = document.getElementById('overlapMini');
+  ov.innerHTML = channels.map(c=>{
+    const cls = c.overlap>=75?'overlap-ok':c.overlap>=65?'overlap-warn':'overlap-bad';
+    return `<div class="overlap-row">
+      <div class="overlap-ch" style="font-size:11px">${c.name}</div>
+      <div class="overlap-track">
+        <div class="overlap-fill" style="width:${c.overlap}%;"></div>
+        ${c.overlap<70?`<div class="overlap-danger" style="right:0;width:${(70-c.overlap)}%;"></div>`:''}
+      </div>
+      <div class="overlap-pct ${cls}">${c.overlap}%</div>
+    </div>`;
+  }).join('');
+
+  // Trend chart
+  const weeks = ['W5','W6','W7','W8','W9','W10','W11','W12'];
+  const gmvData = [5.8,6.1,6.4,6.9,7.0,7.3,7.1,7.2];
+  const ctx2 = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx2,{
+    type:'line',
+    data:{ labels:weeks, datasets:[{
+      data:gmvData, borderColor:'var(--teal)', borderWidth:2,
+      backgroundColor:'rgba(143,168,62,0.08)', fill:true,
+      pointRadius:3, pointBackgroundColor:'var(--teal)', tension:0.4
+    }] },
+    options:{ responsive:true, maintainAspectRatio:false, ...noLegend,
+      scales:{ x:{grid:gridOpts}, y:{grid:gridOpts, ticks:{callback:v=>'$'+v+'M'}} } }
+  });
+
+  // Validation status
+  const vs = document.getElementById('validationStatus');
+  const checks = [
+    { label:'Geo-Lift Alignment', val:'±22%', ok:true },
+    { label:'Propensity Overlap', val:'71% avg', ok:true },
+    { label:'ATE CI Width', val:'38% avg', ok:true },
+    { label:'MMM R²', val:'0.88', ok:true },
+    { label:'MMM MAPE', val:'6.1%', ok:true },
+    { label:'Placebo Pass Rate', val:'5/6', ok:false },
+  ];
+  vs.innerHTML = checks.map(c=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:12px;color:var(--muted)">${c.label}</span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text)">${c.val}</span>
+        <span style="font-size:11px;color:${c.ok?'var(--teal)':'var(--gold)'}">${c.ok?'✓':'⚠'}</span>
+      </span>
+    </div>`).join('');
+}
+
+// ============================================================
+// CHANNELS
+// ============================================================
+function renderChannels() {
+  // Table
+  const tbl = document.getElementById('channelTable');
+  tbl.innerHTML = `<thead><tr>
+    <th>Channel</th><th>Spend</th><th>Last-Click $M</th><th>Causal ATE $M</th><th>Δ Divergence</th><th>Causal ROAS</th><th>Overlap</th>
+  </tr></thead><tbody>${channels.sort((a,b)=>b.causalRoas-a.causalRoas).map(c=>{
+    const diff = ((c.causalATE-c.lastClick)/c.lastClick*100).toFixed(0);
+    const abs = Math.abs(diff);
+    const col = diff>0?'var(--teal)':diff<-20?'var(--red)':'var(--gold)';
+    const barW = Math.min(abs,100)/100*100;
+    const ovcls = c.overlap>=75?'delta-pos':c.overlap>=65?'delta-neu':'delta-neg';
+    return `<tr>
+      <td><div class="ch-name"><div class="ch-dot" style="background:${c.color}"></div><div><div>${c.name}</div></div></div></td>
+      <td>$${c.spend}K</td>
+      <td>$${c.lastClick}M</td>
+      <td style="color:${c.color};font-weight:600">$${c.causalATE}M</td>
+      <td><div class="diff-bar-wrap"><span style="font-family:var(--mono);font-size:11px;color:${col}">${diff>0?'+':''}${diff}%</span><div class="diff-bar-bg"><div class="diff-bar-fill" style="width:${barW}%;background:${col}"></div></div></div></td>
+      <td style="font-family:var(--mono);font-size:12px;font-weight:600;color:${c.causalRoas>=2.5?'var(--teal)':c.causalRoas>=1.5?'var(--gold)':'var(--red)'}">${c.causalRoas}x</td>
+      <td style="font-family:var(--mono);font-size:11px" class="${ovcls}">${c.overlap}%</td>
+    </tr>`;
+  }).join('')}</tbody>`;
+
+  // Heatmap
+  const segments = ['New Users','Returning','High-Value','Mobile','Desktop'];
+  const hteCh = ['Paid Social','Email/CRM','PS Non-Brand','PS Brand'];
+  const hteData = [
+    [34,28,22,4],
+    [42,35,19,5],
+    [28,31,25,3],
+    [38,22,18,6],
+    [29,30,24,3],
+  ];
+  const hm = document.getElementById('heatmapGrid');
+  const flatVals = hteData.flat();
+  const minV=Math.min(...flatVals), maxV=Math.max(...flatVals);
+  function heatColor(v) {
+    const t = (v-minV)/(maxV-minV);
+    if(t<0.2) return {bg:'rgba(224,92,92,0.2)',txt:'var(--red)'};
+    if(t<0.4) return {bg:'rgba(143,168,62,0.15)',txt:'var(--gold)'};
+    if(t<0.7) return {bg:'rgba(143,168,62,0.15)',txt:'var(--teal)'};
+    return {bg:'rgba(143,168,62,0.35)',txt:'var(--teal)'};
+  }
+  let html = `<div class="hm-label-row"><div style="min-width:76px"></div>`;
+  hteCh.forEach(ch=>{ html+=`<div class="hm-label" style="flex:1;font-size:8px">${ch}</div>`; });
+  html+='</div>';
+  hteData.forEach((row,i)=>{
+    html+=`<div class="hm-row"><div class="hm-row-label">${segments[i]}</div>`;
+    row.forEach(v=>{ const c=heatColor(v); html+=`<div class="hm-cell" style="flex:1;background:${c.bg};color:${c.txt}">$${v}</div>`; });
+    html+='</div>';
+  });
+  hm.innerHTML = html;
+
+  // Segment chart
+  const segCtx = document.getElementById('segChart').getContext('2d');
+  new Chart(segCtx,{type:'bar',
+    data:{labels:segments,datasets:[
+      {data:[42,35,28,38,29],backgroundColor:'rgba(143,168,62,0.6)',label:'New',borderRadius:3},
+      {data:[38,32,25,34,27],backgroundColor:'rgba(143,168,62,0.55)',label:'Returning',borderRadius:3},
+      {data:[48,40,32,42,33],backgroundColor:'rgba(74,158,255,0.55)',label:'High-Value',borderRadius:3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,...noLegend,
+      scales:{x:{grid:gridOpts,ticks:{font:{size:8},maxRotation:0}},y:{grid:gridOpts,ticks:{callback:v=>'$'+v}}}}
+  });
+
+  // Diminishing returns
+  const drCtx = document.getElementById('drChart').getContext('2d');
+  function hill(x,k,n){return Math.pow(x,n)/(Math.pow(k,n)+Math.pow(x,n));}
+  const spendX=Array.from({length:40},(_,i)=>i*50);
+  const drSets=[
+    {ch:channels[0],k:900,n:1.6,scale:55,curr:900},
+    {ch:channels[2],k:1200,n:1.3,scale:38,curr:1100},
+    {ch:channels[1],k:400,n:2.0,scale:48,curr:180},
+    {ch:channels[5],k:300,n:0.9,scale:12,curr:680},
+  ];
+  const colors=['#f0f2e8','#a78bfa','#4a9eff','#e05c5c'];
+  new Chart(drCtx,{type:'line',
+    data:{labels:spendX,datasets:drSets.map((d,i)=>({
+      label:d.ch.name,
+      data:spendX.map(x=>hill(x,d.k,d.n)*d.scale),
+      borderColor:colors[i],borderWidth:2,fill:false,tension:0.4,pointRadius:0,
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,...noLegend,
+      scales:{
+        x:{grid:gridOpts,ticks:{callback:v=>v?'$'+v+'K':'',maxTicksLimit:8},title:{display:true,text:'Spend ($K)',color:'rgba(232,228,220,0.3)',font:{size:9}}},
+        y:{grid:gridOpts,ticks:{callback:v=>'$'+v+'M'},title:{display:true,text:'Incremental GMV ($M)',color:'rgba(232,228,220,0.3)',font:{size:9}}}
+      },
+      plugins:{tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: $${ctx.parsed.y.toFixed(1)}M`}}}
+    }
+  });
+
+  // CI panel
+  const ci = document.getElementById('ciPanel');
+  ci.innerHTML = channels.map(c=>{
+    const zero = 33;
+    const scale = 1.8;
+    const ptPct = zero + c.causalATE*scale;
+    const loPct = zero + c.ciLow*scale;
+    const hiPct = zero + c.ciHigh*scale;
+    const geoPct = zero + c.geoResult*scale;
+    const width = Math.max(0,Math.min(100,hiPct))-Math.max(0,Math.min(100,loPct));
+    const left  = Math.max(0,Math.min(100,loPct));
+    const hasGeo = c.geoResult!==null;
+    return `<div class="ci-row">
+      <div class="ci-ch"><span style="color:${c.color};margin-right:6px">●</span>${c.name}</div>
+      <div class="ci-track">
+        <div class="ci-zero"></div>
+        <div class="ci-bar" style="left:${left}%;width:${width}%;background:${c.color}22;border:1px solid ${c.color}55;"></div>
+        <div class="ci-point" style="left:${ptPct}%;background:${c.color};"></div>
+        ${hasGeo?`<div style="position:absolute;left:${geoPct}%;top:-5px;width:2px;height:16px;background:var(--gold);border-radius:1px;" title="Geo-Lift"></div>`:''}
+      </div>
+      <div class="ci-val" style="color:${c.color}">$${c.causalATE}M</div>
+      <div class="ci-geo">${hasGeo?`<span style="color:var(--gold)">●</span> $${c.geoResult}M`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// BUDGET
+// ============================================================
+let budgetVals = channels.map(c=>c.spend);
+const budgetBase = channels.reduce((s,c)=>s+c.spend,0);
+const baseGMV = 7.2;
+
+function calcGMV() {
+  return channels.reduce((s,c,i)=>{
+    const ratio = budgetVals[i]/c.spend;
+    const sat = 1-Math.exp(-0.6*ratio);
+    return s + c.causalATE * sat;
+  },0);
+}
+
+function renderBudget() {
+  const bs = document.getElementById('budgetSliders');
+  bs.innerHTML = channels.map((c,i)=>`
+    <div class="budget-ch-row">
+      <div class="budget-ch-hdr">
+        <div class="budget-ch-name"><span style="color:${c.color}">●</span>${c.name}</div>
+        <div class="budget-ch-vals">Causal ROAS <span>${c.causalRoas}x</span> · mROAS <span style="color:${c.mRoas>=2?'var(--teal)':c.mRoas>=1?'var(--gold)':'var(--red)'}">${c.mRoas}x</span></div>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" min="0" max="${c.spend*2.5}" value="${c.spend}" step="10"
+          oninput="updateSlider(${i},this.value,this)"
+          style="background:linear-gradient(to right,${c.color}88 0%,${c.color}88 ${(c.spend/(c.spend*2.5)*100).toFixed(0)}%,rgba(255,255,255,0.08) ${(c.spend/(c.spend*2.5)*100).toFixed(0)}%,rgba(255,255,255,0.08) 100%)"
+          id="slider-${i}">
+      </div>
+      <div class="budget-impact">
+        <span class="impact-curr">Base: $${c.spend}K</span>
+        <span class="impact-arrow">→</span>
+        <span class="impact-new" id="sliderVal-${i}">$${c.spend}K</span>
+        <span class="impact-curr" id="sliderDiff-${i}"></span>
+      </div>
+    </div>`).join('');
+
+  updateBudgetDisplay();
+
+  // MROAS chart
+  const mroasCtx = document.getElementById('mroasChart').getContext('2d');
+  new Chart(mroasCtx,{type:'bar',
+    data:{
+      labels:channels.map(c=>c.name.split(' ')[0]),
+      datasets:[{
+        data:channels.map(c=>c.mRoas),
+        backgroundColor:channels.map(c=>c.color+'99'),
+        borderRadius:4,borderSkipped:false
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,...noLegend,indexAxis:'y',
+      scales:{x:{grid:gridOpts,ticks:{callback:v=>v+'x'},title:{display:true,text:'Marginal ROAS (per $1K)',color:'rgba(232,228,220,0.3)',font:{size:9}}},y:{grid:{...gridOpts,display:false}}},
+      plugins:{tooltip:{callbacks:{label:c=>`mROAS: ${c.parsed.x}x`}}}
+    }
+  });
+
+  // Alloc table
+  const at = document.getElementById('allocTable');
+  at.innerHTML = `<thead><tr>
+    <th>Channel</th><th>Current</th><th>Recommended</th><th>Δ Budget</th><th>Est. GMV Δ</th><th>Action</th>
+  </tr></thead><tbody>${channels.sort((a,b)=>b.mRoas-a.mRoas).map(c=>{
+    const rec = c.mRoas>=3?Math.round(c.spend*1.4):c.mRoas>=1.5?Math.round(c.spend*1.15):Math.round(c.spend*0.55);
+    const deltaB = rec-c.spend;
+    const deltaG = (deltaB/c.spend*c.causalATE*0.6).toFixed(1);
+    const action = deltaB>0?'↑ Increase':'↓ Reduce';
+    const acol = deltaB>0?'var(--teal)':'var(--red)';
+    return `<tr>
+      <td><div class="ch-name"><div class="ch-dot" style="background:${c.color}"></div>${c.name}</div></td>
+      <td style="font-family:var(--mono);font-size:12px">$${c.spend}K</td>
+      <td style="font-family:var(--mono);font-size:12px;color:${c.color}">$${rec}K</td>
+      <td style="font-family:var(--mono);font-size:12px;color:${acol}">${deltaB>0?'+':''}$${deltaB}K</td>
+      <td style="font-family:var(--mono);font-size:12px;color:${acol}">${deltaG>0?'+':''}$${deltaG}M</td>
+      <td><span style="font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:2px;background:${deltaB>0?'var(--teal2)':'var(--red2)'};color:${acol}">${action}</span></td>
+    </tr>`;
+  }).join('')}</tbody>`;
+}
+
+function updateSlider(i, val, el) {
+  budgetVals[i] = +val;
+  const max = channels[i].spend*2.5;
+  const pct = (val/max*100).toFixed(0);
+  el.style.background = `linear-gradient(to right,${channels[i].color}88 0%,${channels[i].color}88 ${pct}%,rgba(255,255,255,0.08) ${pct}%,rgba(255,255,255,0.08) 100%)`;
+  document.getElementById(`sliderVal-${i}`).textContent = `$${Math.round(val)}K`;
+  const diff = Math.round(val - channels[i].spend);
+  const dEl = document.getElementById(`sliderDiff-${i}`);
+  dEl.textContent = diff===0?'':`(${diff>0?'+':''}$${diff}K)`;
+  dEl.style.color = diff>0?'var(--teal)':diff<0?'var(--red)':'var(--muted)';
+  updateBudgetDisplay();
+}
+
+function updateBudgetDisplay() {
+  const gmv = calcGMV();
+  const lift = ((gmv-baseGMV)/baseGMV*100).toFixed(1);
+  document.getElementById('projGMV').textContent = `$${gmv.toFixed(2)}M`;
+  document.getElementById('liftPct').textContent = `+${lift}%`;
+  document.getElementById('liftBadge').textContent = `+${lift}% Lift`;
+}
+
+// ============================================================
+// GEO
+// ============================================================
+function renderGeo() {
+  const experiments = [
+    { name:'Paid Social Holdout', channel:'Paid Social', dmas:8, period:'Oct–Nov 2025', liftEst:+17, ci:'[+12%, +23%]', conf:94, calibImpact:'↑ +8% ATE prior', status:'complete' },
+    { name:'Email Blackout Test', channel:'Email/CRM',   dmas:6, period:'Dec 2025',     liftEst:+24, ci:'[+18%, +31%]', conf:91, calibImpact:'↑ +12% ATE prior',status:'complete' },
+    { name:'PS Non-Brand Holdout',channel:'PS Non-Brand',dmas:10,period:'Jan 2026',     liftEst:+19, ci:'[+14%, +25%]', conf:88, calibImpact:'↑ +5% ATE prior', status:'complete' },
+    { name:'Display Holdout',     channel:'Display',     dmas:8, period:'Mar 2026',     liftEst:null,ci:'–',           conf:null,calibImpact:'–',               status:'running' },
+  ];
+  const reg = document.getElementById('geoRegistry');
+  reg.innerHTML = experiments.map(e=>{
+    const sc = e.status==='complete'?'var(--teal)':e.status==='running'?'var(--gold)':'var(--muted)';
+    return `<div class="geo-exp-row">
+      <div class="geo-status" style="background:${sc}"></div>
+      <div>
+        <div class="geo-name">${e.name}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">${e.period} · ${e.dmas} DMAs</div>
+      </div>
+      <div class="geo-lift-val" style="color:${e.liftEst?'var(--teal)':'var(--muted)'}">${e.liftEst?'+'+e.liftEst+'%':'···'}</div>
+      <div class="geo-ci">${e.ci}</div>
+      <div class="geo-conf" style="color:${e.conf>=90?'var(--teal)':e.conf>=80?'var(--gold)':'var(--muted)'}">${e.conf?e.conf+'%':'–'}</div>
+    </div>`;
+  }).join('');
+
+  // Calendar
+  const planned = [
+    { name:'PS Brand Test',  quarter:'Q2 2026', dmas:6, status:'planned' },
+    { name:'SEO Dark Period', quarter:'Q2 2026', dmas:4, status:'planned' },
+    { name:'Display Holdout', quarter:'Q1 2026', dmas:8, status:'running' },
+  ];
+  const cal = document.getElementById('geoCalendar');
+  cal.innerHTML = planned.map(p=>{
+    const sc = p.status==='running'?'var(--gold)':'var(--muted)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:7px;height:7px;border-radius:50%;background:${sc};flex-shrink:0;"></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${p.name}</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">${p.quarter} · ${p.dmas} DMAs</div></div>
+      <span style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:2px;background:${p.status==='running'?'rgba(143,168,62,0.12)':'rgba(255,255,255,0.05)'};color:${sc}">${p.status.toUpperCase()}</span>
+    </div>`;
+  }).join('');
+
+  // DiD chart
+  const wks = ['W-8','W-7','W-6','W-5','W-4','W-3','W-2','W-1','|','W+1','W+2','W+3','W+4'];
+  const ctrl = [4.1,4.2,4.0,4.3,4.2,4.4,4.3,4.5,null,4.6,4.7,4.8,4.9];
+  const trt  = [4.0,4.1,4.1,4.2,4.3,4.4,4.2,4.4,null,3.7,3.8,3.6,3.8];
+  const didCtx = document.getElementById('didChart').getContext('2d');
+  new Chart(didCtx,{type:'line',data:{labels:wks,datasets:[
+    { label:'Control', data:ctrl, borderColor:'var(--teal)', borderWidth:2, pointRadius:3, tension:0.3 },
+    { label:'Treatment',data:trt, borderColor:'var(--gold)', borderWidth:2, pointRadius:3, tension:0.3, borderDash:[4,2] }
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,...noLegend,
+    scales:{x:{grid:gridOpts},y:{grid:gridOpts,ticks:{callback:v=>v?'$'+v+'M':''}}}
+  }});
+}
+
+// ============================================================
+// MODEL DIAGNOSTICS
+// ============================================================
+function renderModel() {
+  // Overlap panel
+  const op = document.getElementById('overlapPanel');
+  op.innerHTML = channels.map(c=>{
+    const cls = c.overlap>=75?'overlap-ok':c.overlap>=65?'overlap-warn':'overlap-bad';
+    const note = c.overlap>=75?'✓ Good':c.overlap>=65?'⚠ Marginal':'✕ Trim';
+    return `<div class="overlap-row">
+      <div class="overlap-ch"><span style="color:${c.color};margin-right:6px">●</span>${c.name}</div>
+      <div class="overlap-track">
+        <div class="overlap-fill" style="width:${c.overlap}%;background:${c.color}88;"></div>
+        ${c.overlap<70?`<div class="overlap-danger" style="right:0;width:${70-c.overlap}%;"></div>`:''}
+      </div>
+      <div class="overlap-pct ${cls}">${c.overlap}%</div>
+      <div style="font-family:var(--mono);font-size:10px;min-width:52px;text-align:right;" class="${cls}">${note}</div>
+    </div>`;
+  }).join('');
+
+  // Propensity distribution
+  const propCtx = document.getElementById('propChart').getContext('2d');
+  const bins = Array.from({length:20},(_,i)=>((i+1)*0.05).toFixed(2));
+  const treatD = [2,4,8,14,22,28,24,20,16,12,8,5,3,2,1,1,0,0,0,0];
+  const ctrlD  = [1,2,3,5,8,12,18,22,20,16,10,7,4,3,2,1,1,0,0,0];
+  new Chart(propCtx,{type:'bar',data:{labels:bins,datasets:[
+    { label:'Treated',  data:treatD, backgroundColor:'rgba(143,168,62,0.45)', borderRadius:2, barPercentage:1 },
+    { label:'Control',  data:ctrlD,  backgroundColor:'rgba(74,158,255,0.35)', borderRadius:2, barPercentage:1 }
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,...noLegend,
+    scales:{x:{grid:gridOpts,ticks:{maxTicksLimit:5}},y:{grid:gridOpts}}}
+  });
+
+  // Placebo panel
+  const pp = document.getElementById('placeboPanel');
+  const placebos = [
+    { ch:'Paid Social',   ate:34, pval:'<.001', pass:true },
+    { ch:'Email/CRM',     ate:28, pval:'<.001', pass:true },
+    { ch:'PS Non-Brand',  ate:22, pval:'<.001', pass:true },
+    { ch:'SEO Organic',   ate:18, pval:'.008',  pass:true },
+    { ch:'Display',       ate:11, pval:'.041',  pass:true },
+    { ch:'PS Brand',      ate:4,  pval:'.218',  pass:false },
+  ];
+  pp.innerHTML = `<div style="display:flex;gap:8px;padding:8px 0 12px;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.07em;">
+    <div style="min-width:105px">CHANNEL</div><div style="min-width:60px;text-align:center">ATE ($M)</div><div style="flex:1;text-align:right">P-VALUE</div><div style="min-width:60px;text-align:right">STATUS</div>
+  </div>` + placebos.map(p=>`
+    <div class="placebo-row">
+      <div class="pl-ch"><span style="color:${channels.find(c=>c.name.startsWith(p.ch.split(' ')[0])).color};margin-right:6px">●</span>${p.ch}</div>
+      <div class="pl-ate" style="color:${p.pass?'var(--teal)':'var(--gold)'}">$${p.ate}M</div>
+      <div class="pl-pval">${p.pval}</div>
+      <div><span class="pl-result ${p.pass?'pl-pass':'pl-fail'}">${p.pass?'SIGNIFICANT':'WEAK'}</span></div>
+    </div>`).join('');
+
+  // MMM fit chart
+  const wksM = ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
+  const actual  = [6.1,6.3,5.9,6.5,6.8,7.1,6.9,7.2,7.0,7.3,7.1,7.2];
+  const pred    = [6.2,6.1,6.1,6.4,6.7,7.0,7.1,7.1,7.2,7.2,7.3,7.2];
+  const credLow = actual.map((v,i)=>Math.min(v,pred[i])-0.25);
+  const credHi  = actual.map((v,i)=>Math.max(v,pred[i])+0.25);
+  const mmmCtx  = document.getElementById('mmmFitChart').getContext('2d');
+  new Chart(mmmCtx,{type:'line',data:{labels:wksM,datasets:[
+    { label:'CI Band', data:credHi,  fill:'+1', backgroundColor:'rgba(143,168,62,0.12)', borderColor:'transparent', pointRadius:0, tension:0.3 },
+    { label:'CI Low',  data:credLow, fill:false, borderColor:'transparent', pointRadius:0, tension:0.3 },
+    { label:'Actual',  data:actual,  borderColor:'var(--teal)', borderWidth:2, pointRadius:3, tension:0.3 },
+    { label:'Predicted',data:pred,   borderColor:'var(--gold)', borderWidth:2, borderDash:[4,2], pointRadius:0, tension:0.3 },
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,...noLegend,
+    scales:{x:{grid:gridOpts},y:{grid:gridOpts,ticks:{callback:v=>'$'+v+'M'}}}}
+  });
+
+  // Failure audit
+  const fa = document.getElementById('failureAudit');
+  const risks = [
+    { name:'Model Fit ≠ Causal Validity', risk:'Low', detail:'Placebo tests pass 5/6 channels. Overlap trimmed for PS Brand.' },
+    { name:'Brand / Performance Asymmetry', risk:'Medium', detail:'Brand awareness index proxy is lagged 4 weeks — partial control.' },
+    { name:'Walled Garden Contamination', risk:'Low', detail:'Using CRM-level conversion signal exclusively. Platform data excluded.' },
+    { name:'Diminishing Returns Extrapolation', risk:'Medium', detail:'MMM posterior CI widens at >150% of observed spend for any channel.' },
+    { name:'PS Brand Overlap Failure', risk:'High', detail:'Propensity overlap 61% — below 65% threshold. ATE unreliable for PS Brand.' },
+    { name:'Cross-Device Attribution Loss', risk:'Low', detail:'Device-journey flag captures 78% of cross-device journeys via deterministic match.' },
+  ];
+  const rcols = { Low:'var(--teal)', Medium:'var(--gold)', High:'var(--red)' };
+  const rbgs  = { Low:'var(--teal2)', Medium:'rgba(143,168,62,0.12)', High:'var(--red2)' };
+  fa.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">` +
+  risks.map(r=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;border-left:3px solid ${rcols[r.risk]};">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text)">${r.name}</div>
+      <span style="font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:2px;background:${rbgs[r.risk]};color:${rcols[r.risk]}">${r.risk.toUpperCase()}</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6">${r.detail}</div>
+  </div>`).join('') + '</div>';
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderView('overview');
+</script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cottonil Sheraton — Sales Dashboard 2020</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anta&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b0f07;--bg2:#111608;--surface:#171f0d;--card:#1d2812;--border:#2a3a18;--olive:#8fa83e;--olive2:#b5d44e;--olive-dim:#4d6020;--white:#f0f2e8;--muted:#7a8a62;--red:#e07040;--green:#5eb87e;--blue:#5e8fdc;--yellow:#e0c040;--purple:#a07ae0;--font:'Anta',sans-serif;--r:10px;--r2:14px}
+html{font-size:15px}body{background:var(--bg);color:var(--white);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+::selection{background:rgba(143,168,62,.25)}::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--olive-dim);border-radius:99px}
+.wrap{max-width:1440px;margin:0 auto;padding:1.25rem 1.5rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin-bottom:1rem}
+.g32{display:grid;grid-template-columns:1.65fr 1fr;gap:1rem;margin-bottom:1rem}
+.g321{display:grid;grid-template-columns:1.4fr 1.2fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:1000px){.g5{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:1fr 1fr}.g321,.g32{grid-template-columns:1fr}}
+@media(max-width:640px){.g5,.g4,.g3,.g2{grid-template-columns:1fr 1fr}}
+@media(max-width:400px){.g5,.g4,.g3,.g2{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.15rem;overflow:hidden}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.9rem;gap:.5rem}
+.pt{font-size:.85rem;color:var(--white);line-height:1.2}.ps{font-size:.62rem;color:var(--muted);margin-top:.2rem;text-transform:uppercase;letter-spacing:.08em}
+.pbadge{font-size:.62rem;padding:.2rem .55rem;border-radius:99px;white-space:nowrap;flex-shrink:0;background:rgba(143,168,62,.1);border:1px solid rgba(143,168,62,.2);color:var(--olive)}
+.pbadge-red{background:rgba(224,112,64,.1)!important;border-color:rgba(224,112,64,.25)!important;color:var(--red)!important}
+.dash-header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.5rem;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem}
+.dh-left{display:flex;align-items:center;gap:.85rem}
+.dh-icon{width:48px;height:48px;border-radius:12px;background:var(--olive);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.dh-title{font-size:1.2rem;color:var(--white)}.dh-sub{font-size:.62rem;color:var(--muted);margin-top:.2rem;text-transform:uppercase;letter-spacing:.1em}
+.dh-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.live-dot{display:flex;align-items:center;gap:.45rem;font-size:.68rem;color:var(--green);padding:.3rem .75rem;background:rgba(94,184,126,.08);border:1px solid rgba(94,184,126,.2);border-radius:99px}
+.live-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.dh-stat{font-size:.68rem;color:var(--muted);padding:.3rem .75rem;background:var(--surface);border:1px solid var(--border);border-radius:99px}
+.dh-stat span{color:var(--olive)}
+.sec{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--olive);display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem}
+.sec::before{content:'';width:18px;height:1.5px;background:var(--olive);flex-shrink:0}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.1rem;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:default}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.kpi:hover::after{transform:scaleX(1)}
+.kpi.c0::after{background:var(--olive)}.kpi.c1::after{background:var(--green)}.kpi.c2::after{background:var(--blue)}.kpi.c3::after{background:var(--yellow)}.kpi.c4::after{background:var(--red)}.kpi.c5::after{background:var(--purple)}.kpi.c6::after{background:var(--olive2)}
+.kpi-ico{position:absolute;top:.85rem;right:.9rem;font-size:1.5rem;opacity:.12}
+.kpi-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:.3rem}
+.kpi-val{font-size:1.5rem;color:var(--white);line-height:1}.kpi-sub{font-size:.61rem;color:var(--muted);margin-top:.25rem}
+.delta{display:inline-flex;align-items:center;gap:.2rem;font-size:.64rem;margin-top:.32rem;padding:.12rem .48rem;border-radius:99px}
+.up{background:rgba(94,184,126,.1);color:var(--green)}.dn{background:rgba(224,112,64,.1);color:var(--red)}.neu{background:rgba(122,138,98,.1);color:var(--muted)}
+canvas{display:block;max-width:100%}
+.tbl{width:100%;border-collapse:collapse;font-size:.73rem}
+.tbl th{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.42rem .6rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:.48rem .6rem;border-bottom:1px solid rgba(42,58,24,.35);color:var(--white);vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tbody tr:hover td{background:rgba(143,168,62,.04)}
+.tbl-total td{color:var(--olive)!important}
+.bar-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.52rem}
+.bar-lbl{font-size:.71rem;color:var(--white);flex-shrink:0;width:80px}
+.bar-track{flex:1;height:7px;background:var(--surface);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;width:0;transition:width 1.2s cubic-bezier(.17,.67,.35,1)}
+.bar-val{font-size:.65rem;color:var(--muted);width:85px;text-align:right;flex-shrink:0}
+.prod-row{display:flex;align-items:center;gap:.5rem;padding:.37rem 0;border-bottom:1px solid rgba(42,58,24,.3)}
+.prod-row:last-child{border:none}
+.prod-rank{font-size:.62rem;color:var(--muted);width:16px;text-align:center;flex-shrink:0}
+.prod-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.prod-name{flex:1;font-size:.71rem;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:right}
+.prod-track{width:65px;height:4px;background:var(--surface);border-radius:99px;overflow:hidden;flex-shrink:0}
+.prod-bar{height:100%;border-radius:99px;width:0;transition:width 1.1s}
+.prod-val{font-size:.67rem;color:var(--olive);width:46px;text-align:right;flex-shrink:0}
+.prod-pct{font-size:.6rem;color:var(--muted);width:32px;text-align:right;flex-shrink:0}
+.tag{display:inline-block;font-size:.58rem;padding:.12rem .48rem;border-radius:99px;white-space:nowrap;border:1px solid transparent}
+.tag-red{background:rgba(224,112,64,.1);border-color:rgba(224,112,64,.3);color:var(--red)}
+.tag-warn{background:rgba(224,192,64,.1);border-color:rgba(224,192,64,.25);color:var(--yellow)}
+.tag-ok{background:rgba(94,184,126,.08);border-color:rgba(94,184,126,.2);color:var(--green)}
+.tag-blue{background:rgba(94,143,220,.08);border-color:rgba(94,143,220,.2);color:var(--blue)}
+.tag-olive{background:rgba(143,168,62,.08);border-color:rgba(143,168,62,.2);color:var(--olive)}
+.rec{display:flex;gap:.7rem;padding:.7rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-bottom:.4rem;transition:border-color .2s}
+.rec:hover{border-color:var(--olive-dim)}
+.rec-num{width:22px;height:22px;border-radius:50%;background:rgba(143,168,62,.12);border:1px solid rgba(143,168,62,.22);color:var(--olive);font-size:.62rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+.rec-title{font-size:.77rem;color:var(--white);margin-bottom:.18rem}.rec-desc{font-size:.67rem;color:var(--muted);line-height:1.55}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.7rem;text-align:center}
+.stat-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem}
+.stat-val{font-size:1.05rem;color:var(--white)}.stat-sub{font-size:.6rem;color:var(--muted);margin-top:.12rem}
+.quad-card{border-radius:var(--r);padding:.65rem .8rem;border:1px solid transparent}
+.day-row{display:flex;align-items:center;gap:.5rem;padding:.4rem .55rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:.32rem}
+.day-rank{font-size:.62rem;color:var(--muted);width:16px;flex-shrink:0;text-align:center}
+.day-date{font-size:.71rem;color:var(--white);width:88px;flex-shrink:0}
+.day-bar-wrap{flex:1;height:5px;background:var(--bg);border-radius:99px;overflow:hidden}
+.day-bar{height:100%;border-radius:99px;background:var(--olive);width:0;transition:width 1.1s}
+.day-val{font-size:.67rem;color:var(--olive);width:68px;text-align:right;flex-shrink:0}
+.pricing-row{display:flex;align-items:center;gap:.5rem;padding:.38rem .55rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:.3rem}
+.pricing-name{flex:1;font-size:.69rem;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:right}
+.pricing-range{font-size:.61rem;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.pricing-cv{font-size:.67rem;font-weight:700;flex-shrink:0;width:48px;text-align:right}
+.quarter-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.7rem;text-align:center}
+.q-lbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem}
+.q-val{font-size:1rem;color:var(--white)}.q-sub{font-size:.6rem;color:var(--muted);margin-top:.12rem}
+.q-bar{height:4px;border-radius:99px;margin-top:.5rem;width:0;transition:width 1.2s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.wrap>*{animation:fadeUp .5s ease both}
+.wrap>*:nth-child(1){animation-delay:.04s}.wrap>*:nth-child(2){animation-delay:.08s}.wrap>*:nth-child(3){animation-delay:.12s}.wrap>*:nth-child(4){animation-delay:.16s}.wrap>*:nth-child(5){animation-delay:.2s}.wrap>*:nth-child(6){animation-delay:.24s}.wrap>*:nth-child(7){animation-delay:.28s}.wrap>*:nth-child(8){animation-delay:.32s}.wrap>*:nth-child(9){animation-delay:.36s}.wrap>*:nth-child(10){animation-delay:.4s}.wrap>*:nth-child(11){animation-delay:.44s}.wrap>*:nth-child(12){animation-delay:.48s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="dash-header">
+  <div class="dh-left">
+    <div class="dh-icon">🏪</div>
+    <div>
+      <div class="dh-title">Cottonil Sheraton — Sales Performance Dashboard</div>
+      <div class="dh-sub">January – December 2020 · POS / ERP System · Python + openpyxl · Built by Diaa Abu Al-Saud</div>
+    </div>
+  </div>
+  <div class="dh-right">
+    <span class="live-dot">Data Verified ✓</span>
+    <span class="dh-stat">8,958 Transactions · <span>Full Year 2020</span></span>
+    <span class="dh-stat">746 Active SKUs · <span>0 Errors</span></span>
+  </div>
+</div>
+
+<div class="g5">
+  <div class="kpi c0"><div class="kpi-ico">💰</div><div class="kpi-lbl">Gross Revenue</div><div class="kpi-val">3,379,151</div><div class="kpi-sub">EGP · Full Year 2020</div><div class="delta up">▲ Peak Month: May</div></div>
+  <div class="kpi c1"><div class="kpi-ico">✅</div><div class="kpi-lbl">Net Revenue</div><div class="kpi-val">3,263,569</div><div class="kpi-sub">After all returns</div><div class="delta up">▲ 96.58% of Gross</div></div>
+  <div class="kpi c4"><div class="kpi-ico">↩️</div><div class="kpi-lbl">Total Returns</div><div class="kpi-val">115,582</div><div class="kpi-sub">EGP returned</div><div class="delta dn">▼ 3.42% Return Rate</div></div>
+  <div class="kpi c2"><div class="kpi-ico">🛍️</div><div class="kpi-lbl">Total Invoices</div><div class="kpi-val">4,159</div><div class="kpi-sub">Sales transactions</div><div class="delta neu">Avg 812 EGP / ticket</div></div>
+  <div class="kpi c3"><div class="kpi-ico">⚡</div><div class="kpi-lbl">Daily Average</div><div class="kpi-val">9,233</div><div class="kpi-sub">EGP per trading day</div><div class="delta up">▲ Peak: Jun 12 · 43,990</div></div>
+</div>
+
+<div class="g5">
+  <div class="kpi c6"><div class="kpi-ico">📦</div><div class="kpi-lbl">Active SKUs</div><div class="kpi-val">746</div><div class="kpi-sub">Distinct products sold</div><div class="delta neu">265 SKUs = 80% Rev</div></div>
+  <div class="kpi c5"><div class="kpi-ico">💎</div><div class="kpi-lbl">Avg Basket Value</div><div class="kpi-val">812.49</div><div class="kpi-sub">EGP per invoice</div><div class="delta up">▲ Nov peak: 1,017</div></div>
+  <div class="kpi c0"><div class="kpi-ico">📈</div><div class="kpi-lbl">Peak Month</div><div class="kpi-val">May</div><div class="kpi-sub">484,301 EGP Revenue</div><div class="delta up">▲ +17.5% vs April</div></div>
+  <div class="kpi c4"><div class="kpi-ico">📉</div><div class="kpi-lbl">Worst Month</div><div class="kpi-val">September</div><div class="kpi-sub">159,657 EGP Revenue</div><div class="delta dn">▼ −61% July collapse</div></div>
+  <div class="kpi c4"><div class="kpi-ico">⚠️</div><div class="kpi-lbl">High Return SKUs</div><div class="kpi-val">20</div><div class="kpi-sub">Return rate > 30%</div><div class="delta dn">▼ 4 SKUs above 50%</div></div>
+</div>
+
+<div class="g32">
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Monthly Revenue Trend</div><div class="ps">Gross Revenue · Returns · Net Trend — Jan to Dec 2020</div></div><span class="pbadge">May = Peak · Jul = −61% Collapse</span></div>
+    <canvas id="monthlyChart" height="190"></canvas>
+  </div>
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Quarterly Performance</div><div class="ps">Revenue breakdown + Top 5 peak days</div></div></div>
+    <div class="g2" style="gap:.5rem;margin-bottom:.7rem">
+      <div class="quarter-card"><div class="q-lbl" style="color:var(--blue)">Q1 · Jan–Mar</div><div class="q-val">852,478</div><div class="q-sub">25.2% of annual</div><div class="q-bar" style="background:rgba(94,143,220,.6)" data-w="64"></div></div>
+      <div class="quarter-card"><div class="q-lbl" style="color:var(--olive)">Q2 · Apr–Jun</div><div class="q-val">1,331,336</div><div class="q-sub">39.4% of annual</div><div class="q-bar" style="background:var(--olive)" data-w="100"></div></div>
+      <div class="quarter-card"><div class="q-lbl" style="color:var(--red)">Q3 · Jul–Sep</div><div class="q-val">513,063</div><div class="q-sub">15.2% of annual</div><div class="q-bar" style="background:rgba(224,112,64,.6)" data-w="38"></div></div>
+      <div class="quarter-card"><div class="q-lbl" style="color:var(--yellow)">Q4 · Oct–Dec</div><div class="q-val">682,274</div><div class="q-sub">20.2% of annual</div><div class="q-bar" style="background:rgba(224,192,64,.6)" data-w="51"></div></div>
+    </div>
+    <div class="sec">Top 5 Revenue Days</div>
+    <div id="topDays"></div>
+  </div>
+</div>
+
+<div class="g32">
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Monthly Detailed Breakdown</div><div class="ps">All 12 months · Revenue · Returns · Units · MoM Growth</div></div></div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Month</th><th>Gross (EGP)</th><th>Net (EGP)</th><th>Returns (EGP)</th><th>Return %</th><th>Units</th><th>Invoices</th><th>Avg Basket</th><th>MoM %</th></tr></thead>
+      <tbody id="monthlyTbody"></tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Units Sold vs Invoices</div><div class="ps">Monthly volume comparison</div></div></div>
+    <canvas id="unitsChart" height="215"></canvas>
+  </div>
+</div>
+
+<div class="g321">
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Top 20 Products by Revenue</div><div class="ps">Ranked · Value · Share · Units · Invoice Frequency · ABC Class</div></div><span class="pbadge">All Class A · Q1 Stars</span></div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Product</th><th>Value (EGP)</th><th>Share %</th><th>Units</th><th>Invoices</th><th>Class</th></tr></thead>
+      <tbody id="top20Tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><div><div class="pt">ABC / Pareto Classification</div><div class="ps">746 SKUs · 80/15/5 Revenue Rule</div></div></div>
+    <div class="g3" style="gap:.5rem;margin-bottom:.8rem">
+      <div class="stat-card"><div class="stat-lbl" style="color:var(--olive)">Class A</div><div class="stat-val">265</div><div class="stat-sub">SKUs · 80% Rev</div></div>
+      <div class="stat-card"><div class="stat-lbl" style="color:var(--blue)">Class B</div><div class="stat-val">242</div><div class="stat-sub">SKUs · 15% Rev</div></div>
+      <div class="stat-card"><div class="stat-lbl" style="color:var(--muted)">Class C</div><div class="stat-val">239</div><div class="stat-sub">SKUs · 5% Rev</div></div>
+    </div>
+    <div class="sec">Revenue Share</div>
+    <div style="height:11px;border-radius:5px;overflow:hidden;display:flex;gap:2px;margin-bottom:.45rem">
+      <div style="width:80%;background:rgba(143,168,62,.7);border-radius:4px 0 0 4px"></div>
+      <div style="width:15%;background:rgba(94,143,220,.5)"></div>
+      <div style="width:5%;background:rgba(122,138,98,.35);border-radius:0 4px 4px 0"></div>
+    </div>
+    <div style="display:flex;gap:.8rem;margin-bottom:.8rem;flex-wrap:wrap">
+      <span style="font-size:.6rem;color:var(--olive)">■ A: 2,700,957 EGP</span>
+      <span style="font-size:.6rem;color:var(--blue)">■ B: 507,933 EGP</span>
+      <span style="font-size:.6rem;color:var(--muted)">■ C: 170,261 EGP</span>
+    </div>
+    <canvas id="abcDonut" height="140"></canvas>
+    <div class="sec" style="margin-top:.8rem">Quadrant Matrix</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem">
+      <div class="quad-card" style="background:rgba(143,168,62,.07);border-color:rgba(143,168,62,.2)"><div style="font-size:.62rem;color:var(--olive);margin-bottom:.2rem">Q1 — Stars</div><div style="font-size:.8rem;color:var(--white)">261 SKUs</div><div style="font-size:.62rem;color:var(--muted)">High Val + High Vol</div><div style="font-size:.64rem;color:var(--olive);margin-top:.18rem">2,688,373 EGP</div></div>
+      <div class="quad-card" style="background:rgba(94,143,220,.06);border-color:rgba(94,143,220,.18)"><div style="font-size:.62rem;color:var(--blue);margin-bottom:.2rem">Q2 — Premium</div><div style="font-size:.8rem;color:var(--white)">4 SKUs</div><div style="font-size:.62rem;color:var(--muted)">High Val + Low Vol</div><div style="font-size:.64rem;color:var(--blue);margin-top:.18rem">12,584 EGP</div></div>
+      <div class="quad-card" style="background:rgba(224,192,64,.05);border-color:rgba(224,192,64,.18)"><div style="font-size:.62rem;color:var(--yellow);margin-bottom:.2rem">Q3 — Volume</div><div style="font-size:.8rem;color:var(--white)">0 SKUs</div><div style="font-size:.62rem;color:var(--muted)">Low Val + High Vol</div><div style="font-size:.64rem;color:var(--yellow);margin-top:.18rem">—</div></div>
+      <div class="quad-card" style="background:rgba(224,112,64,.05);border-color:rgba(224,112,64,.18)"><div style="font-size:.62rem;color:var(--red);margin-bottom:.2rem">Q4 — Review</div><div style="font-size:.8rem;color:var(--white)">481 SKUs</div><div style="font-size:.62rem;color:var(--muted)">Low Val + Low Vol</div><div style="font-size:.64rem;color:var(--red);margin-top:.18rem">678,194 EGP</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Revenue by Day of Week</div><div class="ps">Average daily revenue · EGP</div></div><span class="pbadge">Monday = Peak</span></div>
+    <div id="weekdayBars"></div>
+    <canvas id="weekdayChart" height="170" style="margin-top:.9rem"></canvas>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Returns Analysis — All Products</div><div class="ps">Sorted by return value · Total: 115,582 EGP · Rate: 3.42%</div></div><span class="pbadge pbadge-red">20 SKUs above 30%</span></div>
+    <table class="tbl">
+      <thead><tr><th>Product</th><th>Return Val (EGP)</th><th>Units Returned</th><th>Sales Val (EGP)</th><th>Return Rate %</th><th>Action</th></tr></thead>
+      <tbody id="returnsTbody"></tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Pricing Stability Audit</div><div class="ps">CV = Std Dev / Mean × 100 — Inconsistency by SKU</div></div></div>
+    <div class="g3" style="gap:.5rem;margin-bottom:.8rem">
+      <div class="stat-card"><div class="stat-lbl" style="color:var(--green)">Stable ✓</div><div class="stat-val">535+</div><div class="stat-sub">CV < 5%</div></div>
+      <div class="stat-card"><div class="stat-lbl" style="color:var(--yellow)">Variable ⚠</div><div class="stat-val">19</div><div class="stat-sub">CV 5–15%</div></div>
+      <div class="stat-card"><div class="stat-lbl" style="color:var(--red)">Chaotic ✗</div><div class="stat-val">11</div><div class="stat-sub">CV > 15%</div></div>
+    </div>
+    <div class="sec">11 Chaotic SKUs (CV > 15%) — Min vs Avg vs Max Price</div>
+    <div id="chaoticPricing"></div>
+    <canvas id="pricingChart" height="165" style="margin-top:.8rem"></canvas>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Key Business Insights</div><div class="ps">Critical findings from the full year analysis</div></div></div>
+    <div id="insights"></div>
+  </div>
+  <div class="panel">
+    <div class="ph"><div><div class="pt">Strategic Recommendations</div><div class="ps">Prioritized action plan · data-driven · sorted by urgency</div></div></div>
+    <div id="recommendations"></div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:1.5rem 0 .5rem;font-size:.62rem;color:var(--muted);letter-spacing:.09em;text-transform:uppercase">
+  Cottonil Sheraton · Full Year 2020 · Built by <span style="color:var(--olive)">Diaa Abu Al-Saud</span> · Python + openpyxl · Data Analyst Portfolio
+</div>
+
+</div>
+
+<script>
+const C={olive:'#8fa83e',olive2:'#b5d44e',oliveDim:'#4d6020',green:'#5eb87e',blue:'#5e8fdc',yellow:'#e0c040',red:'#e07040',purple:'#a07ae0',muted:'#7a8a62',white:'#f0f2e8',surface:'#171f0d',card:'#1d2812',border:'#2a3a18'};
+Chart.defaults.color=C.muted;Chart.defaults.borderColor=C.border;Chart.defaults.font.family="'Anta',sans-serif";Chart.defaults.font.size=11;
+
+const monthly=[
+  {n:1,m:'January',rev:207518,net:202189,ret:5329,rate:2.57,mom:null,inv:232,units:1125,basket:894},
+  {n:2,m:'February',rev:335129,net:327481,ret:7648,rate:2.28,mom:61.49,inv:389,units:1772,basket:862},
+  {n:3,m:'March',rev:309831,net:299755,ret:10076,rate:3.25,mom:-7.55,inv:462,units:1947,basket:671},
+  {n:4,m:'April',rev:412077,net:398367,ret:13710,rate:3.33,mom:33,inv:498,units:2351,basket:827},
+  {n:5,m:'May',rev:484301,net:462658,ret:21643,rate:4.47,mom:17.53,inv:551,units:2663,basket:879},
+  {n:6,m:'June',rev:434958,net:415053,ret:19905,rate:4.58,mom:-10.19,inv:524,units:2370,basket:830},
+  {n:7,m:'July',rev:168711,net:166772,ret:1939,rate:1.15,mom:-61.21,inv:237,units:1027,basket:712},
+  {n:8,m:'August',rev:184695,net:181601,ret:3094,rate:1.68,mom:9.47,inv:251,units:1203,basket:736},
+  {n:9,m:'September',rev:159657,net:154565,ret:5092,rate:3.19,mom:-13.56,inv:234,units:1133,basket:682},
+  {n:10,m:'October',rev:174265,net:170099,ret:4166,rate:2.39,mom:9.15,inv:228,units:1027,basket:764},
+  {n:11,m:'November',rev:269430,net:255002,ret:14428,rate:5.36,mom:54.61,inv:265,units:1333,basket:1017},
+  {n:12,m:'December',rev:238579,net:230027,ret:8552,rate:3.58,mom:-11.45,inv:288,units:1150,basket:828},
+];
+
+const top20=[
+  {r:1,name:'بيجاما صيفي رجالي بنطلون',val:96400,pct:2.85,units:140,invf:103},{r:2,name:'بيجاما صيفي رجالي شورت',val:83470,pct:2.47,units:134,invf:95},
+  {r:3,name:'شراب كلاسيك',val:53025,pct:1.57,units:707,invf:300},{r:4,name:'شراب سوكيت',val:47838,pct:1.42,units:714,invf:238},
+  {r:5,name:'شراب ميني سوكيت',val:42042,pct:1.24,units:637,invf:245},{r:6,name:'بشكير 90×160',val:40710,pct:1.20,units:75,invf:54},
+  {r:7,name:'بوكسر ديزاين 4',val:38530,pct:1.14,units:288,invf:107},{r:8,name:'بوكسر ديزاين 5',val:37850,pct:1.12,units:285,invf:93},
+  {r:9,name:'بشكير 70×140',val:36970,pct:1.09,units:111,invf:83},{r:10,name:'شراب سوكيت كلاسيك',val:35376,pct:1.05,units:528,invf:188},
+  {r:11,name:'بيجاما رجالي شتوي xl',val:34430,pct:1.02,units:28,invf:20},{r:12,name:'فوطه وسط 50×100',val:32085,pct:0.95,units:177,invf:89},
+  {r:13,name:'حماله رجالي استرتش ابيض 4',val:31692,pct:0.94,units:210,invf:84},{r:14,name:'بوكسر ديزاين 6',val:31100,pct:0.92,units:232,invf:88},
+  {r:15,name:'بشكير احرام',val:31030,pct:0.92,units:29,invf:21},{r:16,name:'حماله رجالي استرتش ابيض 5',val:30709,pct:0.91,units:203,invf:89},
+  {r:17,name:'بيجاما حريمي صيفي بنطلون',val:30100,pct:0.89,units:46,invf:31},{r:18,name:'بيجاما رجالي شتوي m',val:27665,pct:0.82,units:22,invf:20},
+  {r:19,name:'بوكسر برو 4',val:27430,pct:0.81,units:205,invf:65},{r:20,name:'شراب رياضه نص فوطه',val:24820,pct:0.73,units:292,invf:132},
+];
+
+const returns=[
+  {name:'بيجاما رجالي شتوي xl',retVal:5995,retUnits:5,salesVal:34430,rate:17.41},{name:'بيجاما صيفي رجالي شورت',retVal:4940,retUnits:8,salesVal:83470,rate:5.92},
+  {name:'بيجاما شتوي حريمي xxl',retVal:4180,retUnits:4,salesVal:9135,rate:45.76},{name:'بيجاما رجالي شتوي m',retVal:3795,retUnits:3,salesVal:27665,rate:13.72},
+  {name:'نص كم رجالي مارسيليزيه الوان',retVal:3690,retUnits:6,salesVal:3690,rate:100},{name:'بيجاما حريمي صيفي بنطلون',retVal:3250,retUnits:5,salesVal:30100,rate:10.80},
+  {name:'بيجاما شتوي حريمي m',retVal:3000,retUnits:3,salesVal:13450,rate:22.30},{name:'بيجاما رجالي شتوي اسبورت',retVal:2700,retUnits:2,salesVal:16200,rate:16.67},
+  {name:'بشكير 90×160',retVal:2700,retUnits:5,salesVal:40710,rate:6.63},{name:'بكيني رجالي مارسيليزيه 5',retVal:2550,retUnits:6,salesVal:7476,rate:34.11},
+  {name:'بيجاما صيفي رجالي شورت 5xl',retVal:2050,retUnits:3,salesVal:7450,rate:27.52},{name:'طقم تدفئه رجالي 4',retVal:1650,retUnits:3,salesVal:14275,rate:11.56},
+  {name:'بوكسر ديزاين 5',retVal:1480,retUnits:11,salesVal:37850,rate:3.91},{name:'بوكسر برو 6',retVal:1460,retUnits:11,salesVal:20860,rate:7.00},
+  {name:'2667 ماركو',retVal:1450,retUnits:2,salesVal:4350,rate:33.33},{name:'بيجاما صيفي رجالي بنطلون',retVal:1385,retUnits:2,salesVal:96400,rate:1.44},
+  {name:'بكيني برو 8',retVal:1296,retUnits:12,salesVal:2059,rate:62.94},{name:'بيجاما رجالي شتوي 3xl',retVal:1265,retUnits:1,salesVal:16115,rate:7.85},
+  {name:'حماله استرتش اطفالي ابيض 7-8',retVal:864,retUnits:8,salesVal:2484,rate:34.78},{name:'2670 ماركو 3xl',retVal:750,retUnits:1,salesVal:1500,rate:50.00},
+  {name:'2801 ماركو xxl',retVal:775,retUnits:1,salesVal:1550,rate:50.00},{name:'274 بنطلون حريمي 3xl',retVal:570,retUnits:2,salesVal:1835,rate:31.06},
+  {name:'1332 بيجاما اطفالي',retVal:585,retUnits:1,salesVal:1755,rate:33.33},
+];
+
+const weekdays=[{d:'Monday',avg:9884,pct:100},{d:'Friday',avg:9546,pct:96.6},{d:'Saturday',avg:9466,pct:95.8},{d:'Thursday',avg:9294,pct:94.0},{d:'Tuesday',avg:9017,pct:91.2},{d:'Wednesday',avg:8753,pct:88.5},{d:'Sunday',avg:8676,pct:87.8}];
+
+const pricingChaotic=[
+  {name:'بنتاكور قطن حريمي m',avg:208,min:125,max:250,cv:34.64},{name:'بيجاما بناتي صيفي بنطلون 4',avg:354,min:200,max:405,cv:28.98},
+  {name:'ميدي قطن حريمي مشجر m',avg:192,min:110,max:219,cv:28.42},{name:'فاير براه m',avg:95,min:50,max:106,cv:26.42},
+  {name:'101 بريف مطبوع',avg:97,min:75,max:130,cv:25.09},{name:'501 سوفت برا حماله عريضه',avg:108,min:80,max:135,cv:23.16},
+  {name:'516 سوفت برا حماله رفيعه',avg:108,min:80,max:135,cv:20.14},{name:'ميني مايزر ساده 46',avg:195,min:173,max:238,cv:19.28},
+  {name:'221 بكيني ساده',avg:169,min:135,max:198,cv:17.79},{name:'كلسون ريلاكس ابيض 2',avg:233,min:150,max:250,cv:17.50},
+  {name:'بنشو مفتوح',avg:764,min:410,max:830,cv:15.49},
+];
+
+const topDays=[{date:'Jun 12, 2020',val:43990},{date:'Apr 06, 2020',val:38558},{date:'May 07, 2020',val:33409},{date:'Feb 27, 2020',val:27150},{date:'Feb 26, 2020',val:26466}];
+
+const insights=[
+  {ico:'📈', title:'Q2 dominates — 39.4% of full-year revenue',desc:'April–June generated 1.33M EGP. The June 12 Eid surge hit 43,990 EGP in a single day — 4.8× the daily average of 9,233 EGP.'},
+  {ico:'📉', title:'July collapsed −61% month-over-month',desc:'Revenue fell from 435K (June) to 169K (July). Likely COVID-19 restriction or operational closure. No data anomaly — confirmed by invoice count drop (524 → 237).'},
+  {ico:'🎯', title:'35.5% of SKUs generate 80% of all revenue',desc:'265 of 746 products are Class A. The top 20 alone contribute ~15% of gross. Focus inventory, promotion, and restocking on this tier.'},
+  {ico:'⚠️', title:'One product has a 100% return rate',desc:'نص كم رجالي مارسيليزيه — all 6 units sold were returned, totalling 3,690 EGP. Must be reviewed, pulled from inventory, and supplier notified.'},
+  {ico:'💰', title:'November basket value spiked to 1,017 EGP',desc:'Highest avg basket of the year — 25% above annual average. Winter pajamas and thermal sets drive higher per-ticket value.'},
+  {ico:'🔐', title:'79 same-day dual-pricing incidents detected',desc:'Same product, same day, different prices across 11 chaotic SKUs. Indicates unauthorized cashier discounts or POS override. Estimated margin erosion is material.'},
+];
+
+const recs=[
+  {title:'Lock prices in POS system',desc:'11 SKUs with CV>15% and 79 same-day dual-pricing incidents. Disable manual price overrides to eliminate hidden discounts.',tag:'Immediate',tc:'tag-red'},
+  {title:'Restock Q1 Stars before March',desc:'April peak = 412K EGP. Risk of stockout on top sellers. Ensure full inventory for top 20 products before end of February.',tag:'By March',tc:'tag-warn'},
+  {title:'Pull 4 critical return SKUs',desc:'Marcelize Sleeve = 100%, Bikini Pro 8 = 62.9%, Bikini Printed 6 = 75%, Bikini Kid Gym = 34.8%. Combined return loss = ~9,800 EGP.',tag:'Immediate',tc:'tag-red'},
+  {title:'Investigate July −61% collapse',desc:'July 169K vs June 435K. Identify if cause was COVID lockdown, stockout, or staffing gap. Build a contingency plan for Q3 2021.',tag:'2 Weeks',tc:'tag-blue'},
+  {title:'Phase out 481 Q4-Review SKUs',desc:'60% of catalog generates under 5% of revenue. Reducing SKU count improves inventory turns, reduces carrying cost, and simplifies operations.',tag:'Q1 2021',tc:'tag-olive'},
+];
+
+new Chart(document.getElementById('monthlyChart'),{type:'bar',data:{labels:monthly.map(d=>d.m.slice(0,3)),datasets:[{label:'Gross Revenue',data:monthly.map(d=>d.rev),backgroundColor:'rgba(143,168,62,.55)',borderRadius:4,order:2},{label:'Returns',data:monthly.map(d=>d.ret),backgroundColor:'rgba(224,112,64,.55)',borderRadius:4,order:2},{label:'Net Trend',data:monthly.map(d=>d.net),type:'line',borderColor:C.olive2,backgroundColor:'transparent',pointRadius:3.5,pointBackgroundColor:C.olive2,tension:.35,borderWidth:1.8,order:1}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{boxWidth:10,padding:14}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString()} EGP`}}},scales:{x:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted}},y:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted,callback:v=>v>=1000?`${(v/1000).toFixed(0)}K`:v}}}}});
+
+new Chart(document.getElementById('unitsChart'),{type:'bar',data:{labels:monthly.map(d=>d.m.slice(0,3)),datasets:[{label:'Units Sold',data:monthly.map(d=>d.units),backgroundColor:'rgba(94,143,220,.55)',borderRadius:4},{label:'Invoices',data:monthly.map(d=>d.inv),backgroundColor:'rgba(160,122,224,.45)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{boxWidth:10,padding:12}}},scales:{x:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted}},y:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted}}}}});
+
+new Chart(document.getElementById('abcDonut'),{type:'doughnut',data:{labels:['Class A — 265 SKUs (80%)','Class B — 242 SKUs (15%)','Class C — 239 SKUs (5%)'],datasets:[{data:[80,15,5],backgroundColor:[C.olive,'rgba(94,143,220,.7)','rgba(122,138,98,.4)'],borderWidth:0,hoverOffset:8}]},options:{responsive:true,cutout:'66%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}%`}}}}});
+
+new Chart(document.getElementById('weekdayChart'),{type:'bar',data:{labels:weekdays.map(d=>d.d.slice(0,3)),datasets:[{label:'Avg Daily Revenue (EGP)',data:weekdays.map(d=>d.avg),backgroundColor:weekdays.map(d=>d.pct===100?C.olive:'rgba(143,168,62,.45)'),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted,callback:v=>`${(v/1000).toFixed(1)}K`}},y:{grid:{display:false},ticks:{color:C.muted}}}}});
+
+new Chart(document.getElementById('pricingChart'),{type:'bar',data:{labels:pricingChaotic.map(d=>d.name.split(' ').slice(0,2).join(' ')),datasets:[{label:'Min',data:pricingChaotic.map(d=>d.min),backgroundColor:'rgba(94,143,220,.5)',borderRadius:3},{label:'Avg',data:pricingChaotic.map(d=>d.avg),backgroundColor:'rgba(224,192,64,.6)',borderRadius:3},{label:'Max',data:pricingChaotic.map(d=>d.max),backgroundColor:'rgba(224,112,64,.55)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{boxWidth:10,padding:10,font:{size:10}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} EGP`}}},scales:{x:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted,font:{size:9},maxRotation:35}},y:{grid:{color:'rgba(42,58,24,.4)'},ticks:{color:C.muted}}}}});
+
+const tb=document.getElementById('monthlyTbody');
+monthly.forEach(d=>{const mc=d.mom===null?C.muted:d.mom>0?C.green:C.red;const ms=d.mom===null?'—':d.mom>0?`+${d.mom}%`:`${d.mom}%`;const rc=d.rate>4?C.red:d.rate>3?C.yellow:C.muted;tb.innerHTML+=`<tr><td style="color:var(--muted)">${d.n}</td><td>${d.m}</td><td style="color:var(--olive)">${d.rev.toLocaleString()}</td><td style="color:var(--olive2)">${d.net.toLocaleString()}</td><td style="color:var(--red)">${d.ret.toLocaleString()}</td><td style="color:${rc}">${d.rate}%</td><td>${d.units.toLocaleString()}</td><td>${d.inv}</td><td>${d.basket}</td><td style="color:${mc}">${ms}</td></tr>`;});
+tb.innerHTML+=`<tr class="tbl-total"><td></td><td>TOTAL / AVG</td><td>3,379,151</td><td>3,263,569</td><td>115,582</td><td>3.42%</td><td>19,132</td><td>3,919</td><td>812</td><td>—</td></tr>`;
+
+const t2=document.getElementById('top20Tbody');
+top20.forEach(p=>{const clr=p.r<=5?C.olive:p.r<=10?C.blue:C.muted;t2.innerHTML+=`<tr><td style="color:var(--muted)">${p.r}</td><td style="direction:rtl;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</td><td style="color:var(--olive)">${p.val.toLocaleString()}</td><td style="color:${clr}">${p.pct}%</td><td>${p.units}</td><td>${p.invf}</td><td><span class="tag tag-olive">A · Q1</span></td></tr>`;});
+
+const rt=document.getElementById('returnsTbody');
+returns.forEach(r=>{const clr=r.rate>=50?C.red:r.rate>=30?C.yellow:r.rate>=10?'#e0c040':C.muted;const tc=r.rate>=50?'tag-red':r.rate>=30?'tag-warn':'tag-ok';const tt=r.rate>=50?'Stop Now':r.rate>=30?'Review':'Monitor';rt.innerHTML+=`<tr><td style="direction:rtl;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.name}">${r.name}</td><td style="color:${clr}">${r.retVal.toLocaleString()}</td><td>${r.retUnits}</td><td style="color:var(--muted)">${r.salesVal.toLocaleString()}</td><td style="color:${clr};font-weight:500">${r.rate}%</td><td><span class="tag ${tc}">${tt}</span></td></tr>`;});
+
+const wd=document.getElementById('weekdayBars');
+weekdays.forEach(w=>{wd.innerHTML+=`<div class="bar-row"><span class="bar-lbl">${w.d}</span><div class="bar-track"><div class="bar-fill" data-w="${w.pct}" style="background:${w.pct===100?C.olive:'rgba(143,168,62,.5)'}"></div></div><span class="bar-val">${w.avg.toLocaleString()} EGP</span></div>`;});
+
+const cp=document.getElementById('chaoticPricing');
+pricingChaotic.forEach(p=>{cp.innerHTML+=`<div class="pricing-row"><span class="pricing-name" title="${p.name}">${p.name}</span><span class="pricing-range">${p.min}–${p.max} EGP</span><span class="pricing-cv" style="color:${p.cv>25?C.red:p.cv>20?C.yellow:C.muted}">CV ${p.cv}%</span><span class="tag tag-red">Chaotic</span></div>`;});
+
+const tdEl=document.getElementById('topDays');
+topDays.forEach((d,i)=>{tdEl.innerHTML+=`<div class="day-row"><span class="day-rank">${i+1}</span><span class="day-date">${d.date}</span><div class="day-bar-wrap"><div class="day-bar" data-w="${Math.round(d.val/topDays[0].val*100)}"></div></div><span class="day-val">${d.val.toLocaleString()} EGP</span></div>`;});
+
+const ins=document.getElementById('insights');
+insights.forEach(i=>{ins.innerHTML+=`<div class="rec"><div style="font-size:1rem;flex-shrink:0;margin-top:.05rem">${i.ico}</div><div><div class="rec-title">${i.title}</div><div class="rec-desc">${i.desc}</div></div></div>`;});
+
+const rc=document.getElementById('recommendations');
+recs.forEach((r,i)=>{rc.innerHTML+=`<div class="rec"><div class="rec-num">${i+1}</div><div><div class="rec-title">${r.title}</div><div class="rec-desc">${r.desc}</div><span class="tag ${r.tc}" style="margin-top:.3rem;display:inline-block">${r.tag}</span></div></div>`;});
+
+setTimeout(()=>{document.querySelectorAll('[data-w]').forEach(el=>{el.style.width=el.dataset.w+'%'});},380);
+</script>
+</body>
+</html>
